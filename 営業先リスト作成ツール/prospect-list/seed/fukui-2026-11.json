@@ -1,0 +1,848 @@
+{
+  "title": "福井県内の営業先候補（公開情報から作成）",
+  "checkedAt": "2026-11-17",
+  "note": "出典の CITY:nn は福井市「福井市の企業をご紹介します！」の企業紹介PDF、PREF:nn は福井県「ふくいSDGsパートナー取組事例集（令和4年度）」の該当ページ。評価点と提案仮説は公開情報からの仮評価で、先方には未確認。",
+  "sources": {
+    "CITY": "https://www.city.fukui.lg.jp/sigoto/syoukou/koyosokusin/kigyousyoukai08_d/fil/{n}kigyo.pdf",
+    "PREF": "https://www.pref.fukui.lg.jp/doc/seiki/sdgs/sdgs-jireisyuu-r4_d/fil/00.pdf#page={n}"
+  },
+  "prospects": [
+    {
+      "name": "北陸設備工業株式会社",
+      "municipality": "福井市",
+      "address": "福井市宝永4丁目6番3号",
+      "industry": "建設業（空調・給排水衛生設備の設計・施工・保守）",
+      "links": { "website": "https://hokusetsu.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-24-1700", "sourceUrl": "https://hokusetsu.jp/company/" },
+        { "type": "form", "value": "https://hokusetsu.jp/contact/", "sourceUrl": "https://hokusetsu.jp/company/" }
+      ],
+      "facts": [
+        { "text": "会社概要に、事業内容は空調設備及び給排水衛生設備の設計・施工・管理、所在地は福井本社と富山営業所と記載されている", "sourceUrl": "https://hokusetsu.jp/company/" },
+        { "text": "福井市の企業紹介に、従業員60人、設計・施工・保守を一貫して担い、MRデバイスなどのデジタルツールで情報共有の円滑化を進めていると掲載されている", "sourceUrl": "CITY:06" }
+      ],
+      "clues": ["recurring", "documents", "multisite"],
+      "hypotheses": ["保守・点検の依頼受付から訪問日程、作業報告までを一つの記録にまとめられる可能性がある"],
+      "questions": ["保守・点検の依頼はどの方法で受け付け、誰が日程を決めているか", "点検・作業の報告書は何で作成しているか"],
+      "scores": {
+        "fit": { "value": 4, "reason": "設計・施工に加え保守も担っており、依頼受付と報告が繰り返し発生すると考えられる" },
+        "needs": { "value": 3, "reason": "デジタルツールによる情報共有に取り組んでいると公表。残っている課題は未確認" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "代表電話と問い合わせページあり" }
+      }
+    },
+    {
+      "name": "株式会社辻広組",
+      "municipality": "福井市",
+      "address": "福井市江守中町8-18",
+      "industry": "建設業（道路舗装・土木）",
+      "links": { "website": "https://tsujihiro-gumi.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-35-8115", "sourceUrl": "https://tsujihiro-gumi.jp/" },
+        { "type": "form", "value": "https://tsujihiro-gumi.jp/otoiawase", "sourceUrl": "https://tsujihiro-gumi.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、舗装・土木工事を中核にスポーツ施設、建築、橋梁などの建設事業を行っていると記載されている", "sourceUrl": "https://tsujihiro-gumi.jp/" },
+        { "text": "福井市の企業紹介に、従業員121名（グループ含む）、ICT施工や3次元データを活用して建設DXを推進していると掲載されている", "sourceUrl": "CITY:05" }
+      ],
+      "clues": ["documents", "multisite", "hiring"],
+      "hypotheses": ["複数現場の日報・写真・進捗を事務所と共有する作業を整理できる可能性がある"],
+      "questions": ["現場の日報や写真は誰がどのようにまとめているか", "施工以外の事務作業で手間がかかっている業務は何か"],
+      "scores": {
+        "fit": { "value": 4, "reason": "複数現場を並行して運営しており、現場と事務所の情報の受け渡しが多いと考えられる" },
+        "needs": { "value": 3, "reason": "建設DXを推進中と公表。施工以外の業務の状況は未確認" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "代表電話と問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "株式会社松田（幸）組",
+      "municipality": "福井市",
+      "address": "福井市浜住町8-1",
+      "industry": "建設業（港湾・土木・舗装・建築）",
+      "links": { "website": "https://mattakoh-gumi.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-86-1121", "sourceUrl": "https://mattakoh-gumi.jp/" },
+        { "type": "form", "value": "https://mattakoh-gumi.jp/contact/", "sourceUrl": "https://mattakoh-gumi.jp/" },
+        { "type": "sns", "value": "https://www.instagram.com/mattakoh/", "sourceUrl": "CITY:07" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、事業内容は港湾、土木、舗装、建築と記載されている。電話受付は平日8:00〜17:00", "sourceUrl": "https://mattakoh-gumi.jp/" },
+        { "text": "福井市の企業紹介に、創業127年、従業員34人、福井市内で唯一自社所有の作業船を保有していると掲載されている", "sourceUrl": "CITY:07" }
+      ],
+      "clues": ["documents", "multisite"],
+      "hypotheses": ["公共工事の提出書類や現場写真の整理を効率化できる可能性がある"],
+      "questions": ["公共工事の提出書類は誰が作成しているか", "現場と事務所の情報共有はどの方法で行っているか"],
+      "scores": {
+        "fit": { "value": 3, "reason": "港湾・土木などの公共工事では書類作成が繰り返し発生すると考えられる" },
+        "needs": { "value": 2, "reason": "業務課題に関する公開情報は少ない" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "代表電話・問い合わせフォーム・公式Instagramあり" }
+      }
+    },
+    {
+      "name": "株式会社佐々木電業社",
+      "municipality": "福井市",
+      "address": "福井市文京4丁目25番21号",
+      "industry": "建設業（電気工事・電気通信工事）",
+      "links": { "website": "https://www.sasaki-dengyosya.com/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-21-4707", "sourceUrl": "https://www.sasaki-dengyosya.com/" },
+        { "type": "email", "value": "info@e-sasaki.jp", "sourceUrl": "https://www.sasaki-dengyosya.com/" },
+        { "type": "form", "value": "https://www.sasaki-dengyosya.com/contact/", "sourceUrl": "https://www.sasaki-dengyosya.com/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、内線工事、外線工事（配電）、キュービクルを手がけると記載されている", "sourceUrl": "https://www.sasaki-dengyosya.com/" },
+        { "text": "福井市の企業紹介に、従業員16人、工場のメンテナンスや配電工事を行っていると掲載されている", "sourceUrl": "CITY:03" }
+      ],
+      "clues": ["recurring", "documents"],
+      "hypotheses": ["工場メンテナンスの依頼受付・作業記録・報告書作成を一元化できる可能性がある"],
+      "questions": ["工場からのメンテナンス依頼はどの方法で受け付けているか", "作業報告書はどのように作成しているか"],
+      "scores": {
+        "fit": { "value": 4, "reason": "工場メンテナンスは定期的な依頼と報告が繰り返し発生すると考えられる" },
+        "needs": { "value": 2, "reason": "業務課題に関する公開情報は少ない" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "代表電話・代表メール・問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "株式会社グリーンシェルター",
+      "municipality": "坂井市",
+      "address": "坂井市丸岡町小黒70-6-1",
+      "industry": "建設業・造園メンテナンス・施設運営",
+      "links": { "website": "https://www.shelter.co.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-67-1260", "sourceUrl": "https://www.shelter.co.jp/" },
+        { "type": "form", "value": "https://www.shelter.co.jp/contact", "sourceUrl": "https://www.shelter.co.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、建設・造園メンテナンス・施設運営・警備・高速メンテナンス・自然エネルギー事業を行い、本社のほかあわら支店、敦賀支店、東京支社などの拠点があると記載されている", "sourceUrl": "https://www.shelter.co.jp/" },
+        { "text": "福井市の企業紹介に、従業員122人、ICT施工やクラウドシステム、AI・ドローンを導入して業務効率化を進めていると掲載されている", "sourceUrl": "CITY:02" }
+      ],
+      "clues": ["multisite", "recurring"],
+      "hypotheses": ["造園メンテナンスや施設運営の定期作業の予定と実績を拠点間で共有できる可能性がある"],
+      "questions": ["定期メンテナンスの予定と実績はどのように管理しているか", "導入済みのクラウドシステムで対応できていない業務はあるか"],
+      "scores": {
+        "fit": { "value": 4, "reason": "複数拠点・複数事業で定期作業を運営している" },
+        "needs": { "value": 3, "reason": "業務効率化に取り組んでいると公表。既存システムで足りない部分は未確認" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "代表電話と問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "大電産業株式会社",
+      "municipality": "福井市",
+      "address": "福井市春山1丁目6番15号",
+      "industry": "卸売業（電設資材・通信ネットワーク・工場自動化支援）",
+      "links": { "website": "https://www.daiden.co.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-23-9611", "sourceUrl": "https://www.daiden.co.jp/contact/" },
+        { "type": "form", "value": "https://www.daiden.co.jp/contact/", "sourceUrl": "https://www.daiden.co.jp/contact/" }
+      ],
+      "facts": [
+        { "text": "問い合わせページに、本社所在地と、でんざいコラボ事業部（0776-23-9611）・エンジニアリング事業部（0776-23-9621）の電話番号が記載されている。代表番号の表記はない", "sourceUrl": "https://www.daiden.co.jp/contact/" },
+        { "text": "福井市の企業紹介に、従業員104人、営業事務・仕入・経理などバックオフィス業務のDX化に取り組んでいると掲載されている", "sourceUrl": "CITY:12" }
+      ],
+      "clues": ["documents", "handoff"],
+      "hypotheses": ["営業事務と仕入の間の見積・受発注の受け渡しを整理できる可能性がある。ただし自社でも取引先のDX化を支援している"],
+      "questions": ["バックオフィスのDX化で残っている課題は何か", "見積・受注の情報は営業と事務でどのように引き継いでいるか"],
+      "scores": {
+        "fit": { "value": 3, "reason": "営業事務・仕入・経理の受け渡しがある" },
+        "needs": { "value": 4, "reason": "バックオフィス業務のDX化に取り組んでいると明記" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 4, "reason": "事業部の電話と問い合わせフォームあり。代表番号は記載なし" }
+      }
+    },
+    {
+      "name": "北陸化成工業株式会社",
+      "municipality": "福井市",
+      "address": "福井市甑谷町29-22-17",
+      "industry": "製造業（塩化ビニル樹脂コンパウンド）",
+      "links": { "website": "https://www.emori.co.jp/company/network/hokuriku-chemical-industria" },
+      "contacts": [
+        { "type": "phone", "value": "0776-98-4670", "sourceUrl": "https://www.emori.co.jp/company/network/hokuriku-chemical-industria" }
+      ],
+      "facts": [
+        { "text": "グループ会社紹介ページに、事業内容はコンパウンドの製造と記載されている", "sourceUrl": "https://www.emori.co.jp/company/network/hokuriku-chemical-industria" },
+        { "text": "福井市の企業紹介に、従業員25人、紙ベースを廃止して工場内ネットワークを構築し、タブレットで工程・進捗データを一元管理していると掲載されている", "sourceUrl": "CITY:01" }
+      ],
+      "clues": ["documents"],
+      "hypotheses": ["工場内はデジタル化済みのため、受注・顧客対応や品質書類の側に整理の余地がある可能性がある"],
+      "questions": ["工程データ以外で、紙やExcelで回している業務はあるか", "顧客からの問い合わせや品質書類にはどう対応しているか"],
+      "scores": {
+        "fit": { "value": 2, "reason": "工場内の工程管理はすでにデジタル化されている" },
+        "needs": { "value": 2, "reason": "工場以外の業務の状況は未確認" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 3, "reason": "電話のみ。親会社（興和江守）のサイトに掲載" }
+      }
+    },
+    {
+      "name": "株式会社ヤクルト北陸",
+      "municipality": "福井市",
+      "address": "福井市江端町4-11-2（福井本社）",
+      "industry": "卸売・小売業（乳製品・化粧品の宅配販売）",
+      "links": { "website": "https://yakult-hokuriku.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0120-1-8960-3", "sourceUrl": "https://yakult-hokuriku.jp/" },
+        { "type": "form", "value": "https://yakult-hokuriku.jp/contact/", "sourceUrl": "https://yakult-hokuriku.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、福井本社と石川本社があり、ヤクルトレディによる個別配達、出前授業・健康教室、法人向け「オフィスでヤクルト」を行っていると記載されている", "sourceUrl": "https://yakult-hokuriku.jp/" },
+        { "text": "福井市の企業紹介に、従業員83人、営業活動や社内業務にデジタルツールを活用していると掲載されている", "sourceUrl": "CITY:17" }
+      ],
+      "clues": ["recurring", "multisite"],
+      "hypotheses": ["出前授業や法人向けサービスの申込受付・日程調整を整理できる可能性がある"],
+      "questions": ["出前授業や法人向けサービスの申込はどのように受け付けているか", "センター間で共有している情報と方法"],
+      "scores": {
+        "fit": { "value": 3, "reason": "定期配達や申込受付が繰り返し発生する" },
+        "needs": { "value": 2, "reason": "デジタルツールを活用済み。課題は未確認" },
+        "feasibility": { "value": null, "reason": "グループ全体のシステム利用状況は未確認" },
+        "reach": { "value": 3, "reason": "フリーダイヤルと問い合わせフォームあり。顧客向け窓口の可能性がある" }
+      }
+    },
+    {
+      "name": "税理士法人ウィズ総合事務所",
+      "municipality": "大野市",
+      "address": "大野市要町3-14",
+      "industry": "税理士事務所（税務・記帳代行・給与計算）",
+      "links": { "website": "https://wiz-tax.com/" },
+      "contacts": [
+        { "type": "phone", "value": "0779-64-4182", "sourceUrl": "https://wiz-tax-recruit.com/" },
+        { "type": "email", "value": "info@wiz-tax.com", "sourceUrl": "https://wiz-tax-recruit.com/" },
+        { "type": "form", "value": "https://wiz-tax-recruit.com/contact", "sourceUrl": "https://wiz-tax-recruit.com/" }
+      ],
+      "facts": [
+        { "text": "採用サイトに、記帳代行や給与計算などの経理代行を行い、大野本店と福井支店があると記載されている", "sourceUrl": "https://wiz-tax-recruit.com/" },
+        { "text": "福井市の企業紹介に、従業員6人、クラウドシステムやAIで業務を標準化・効率化し、全業務のマニュアルを整備していると掲載されている", "sourceUrl": "CITY:18" }
+      ],
+      "clues": ["documents", "recurring", "multisite"],
+      "hypotheses": ["顧問先からの資料回収や月次処理の進捗管理を整理できる可能性がある。顧問先の業務改善の紹介元にもなり得る"],
+      "questions": ["顧問先からの資料の受け取りと進捗管理はどうしているか", "顧問先から業務効率化の相談を受けることはあるか"],
+      "scores": {
+        "fit": { "value": 4, "reason": "記帳代行・給与計算は毎月繰り返す定型業務" },
+        "needs": { "value": 3, "reason": "業務の標準化・効率化に取り組んでいると公表" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "電話・メール・問い合わせフォームあり（フォームは採用サイト）" }
+      }
+    },
+    {
+      "name": "株式会社六大陸（福井フェニックスホテル）",
+      "municipality": "福井市",
+      "address": "福井市大手二丁目4番24号 大手ビル3F",
+      "industry": "宿泊業・飲食サービス業",
+      "links": { "website": "https://6conts.com/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-21-2525", "sourceUrl": "https://6conts.com/" },
+        { "type": "sns", "value": "https://www.instagram.com/291phoenixhotel/", "sourceUrl": "CITY:19" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、福井フェニックスホテルを「福井の伝統工芸コンシェルジュホテル」として2023年6月に営業再開したと記載されている", "sourceUrl": "https://6conts.com/" },
+        { "text": "福井市の企業紹介に、従業員25人、ホテルと和食レストランを運営し、電話応対技能検定などの資格取得を推進していると掲載されている", "sourceUrl": "CITY:19" }
+      ],
+      "clues": ["handoff", "recurring"],
+      "hypotheses": ["宿泊・レストランの予約や問い合わせの引き継ぎを整理できる可能性がある"],
+      "questions": ["宿泊とレストランの予約管理は別々に行っているか", "問い合わせ対応で手間がかかっていることは何か"],
+      "scores": {
+        "fit": { "value": 3, "reason": "予約・問い合わせを複数のスタッフで引き継ぐ業態" },
+        "needs": { "value": 2, "reason": "業務課題に関する公開情報は少ない" },
+        "feasibility": { "value": null, "reason": "予約システムの利用状況は未確認" },
+        "reach": { "value": 4, "reason": "代表電話と公式Instagramあり" }
+      }
+    },
+    {
+      "name": "社会福祉法人安居福祉会",
+      "municipality": "福井市",
+      "address": "福井市本堂町51-33",
+      "industry": "医療・福祉（高齢者介護）",
+      "links": { "website": "https://www.takaoen.jp/" },
+      "contacts": [
+        { "type": "form", "value": "https://www.takaoen.jp/contact", "sourceUrl": "https://www.takaoen.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、特別養護老人ホーム高雄苑、デイサービス、居宅介護支援、グループホーム田園、ほたるの杜の5つの施設・サービスが掲載されている", "sourceUrl": "https://www.takaoen.jp/" },
+        { "text": "福井市の企業紹介に、従業員110人、色々な種類の介護施設を運営していると掲載されている", "sourceUrl": "CITY:20" }
+      ],
+      "clues": ["multisite", "handoff", "recurring"],
+      "hypotheses": ["施設間の申し送りや利用相談・見学の受付を整理できる可能性がある。介護記録ソフトの導入状況は未確認"],
+      "questions": ["施設間で共有している情報と、その方法", "利用相談・見学の受付から利用開始までの流れ"],
+      "scores": {
+        "fit": { "value": 4, "reason": "5つの施設・サービスを運営し、申し送りや相談対応が多いと考えられる" },
+        "needs": { "value": 2, "reason": "業務課題に関する公開情報は少ない" },
+        "feasibility": { "value": null, "reason": "既存の介護システムとの関係は未確認" },
+        "reach": { "value": 3, "reason": "問い合わせフォームあり。法人の代表電話は記載なし（各施設の電話のみ）" }
+      }
+    },
+    {
+      "name": "アイビーエージェント株式会社",
+      "municipality": "福井市",
+      "address": "福井市日之出4丁目1-6",
+      "industry": "人材サービス（派遣・職業紹介・職業訓練）",
+      "links": { "website": "https://www.iba-net.co.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-29-0888", "sourceUrl": "https://www.iba-net.co.jp/" },
+        { "type": "email", "value": "iba@iba-net.co.jp", "sourceUrl": "https://www.iba-net.co.jp/" },
+        { "type": "form", "value": "https://www.iba-net.co.jp/contact/houjin/", "sourceUrl": "https://www.iba-net.co.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、一般労働者派遣、有料職業紹介、職業訓練、教育センター、人材育成・採用支援を行っていると記載されている。企業・法人向けの問い合わせフォームがある", "sourceUrl": "https://www.iba-net.co.jp/" },
+        { "text": "福井市の企業紹介に、従業員20人、派遣・職業紹介・請負・委託訓練・各種講座を行っていると掲載されている", "sourceUrl": "CITY:21" }
+      ],
+      "clues": ["handoff", "recurring", "documents"],
+      "hypotheses": ["求職者・派遣先・訓練受講者の進捗や書類のやり取りを整理できる可能性がある"],
+      "questions": ["求職者と企業の情報は何で管理しているか", "職業訓練の出欠や提出書類はどう管理しているか"],
+      "scores": {
+        "fit": { "value": 4, "reason": "求職者・企業・受講者の情報を複数の担当で引き継ぐ業態" },
+        "needs": { "value": 2, "reason": "業務課題に関する公開情報は少ない" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "電話・メール・法人向けフォームあり" }
+      }
+    },
+    {
+      "name": "奥武建設工業株式会社",
+      "municipality": "福井市",
+      "address": "福井市大東2-1-5",
+      "industry": "建設業（足場・土木）",
+      "links": { "website": "https://okutake.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-54-7670", "sourceUrl": "https://okutake.jp/" },
+        { "type": "form", "value": "https://okutake.jp/contact/", "sourceUrl": "https://okutake.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、足場・土木工事を行い、グループ会社として株式会社オクタケ（クレーン・運送）と株式会社高洋建設（建築・リニューアル）があると記載されている", "sourceUrl": "https://okutake.jp/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、OKUTAKE GROUPの従業員90名、外国人労働者のチームがあると掲載されている", "sourceUrl": "PREF:13" }
+      ],
+      "clues": ["multisite", "handoff", "documents"],
+      "hypotheses": ["グループ3社の現場・クレーン・人員の手配情報を共有できる可能性がある"],
+      "questions": ["グループ会社間で人員やクレーンの手配をどう調整しているか", "現場ごとの作業記録はどのように残しているか"],
+      "scores": {
+        "fit": { "value": 4, "reason": "グループ3社で現場・機材・人員の調整が発生すると考えられる" },
+        "needs": { "value": 3, "reason": "複数社・外国人労働者を含む体制で情報共有の負担が想定される（未確認）" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "代表電話と問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "株式会社長田工業所",
+      "municipality": "坂井市",
+      "address": "坂井市春江町西長田41-1-1",
+      "industry": "建設業・製造業（工場安全対策工事・鉄工）",
+      "links": { "website": "https://www.osadaindustry.com/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-72-1164", "sourceUrl": "https://www.osadaindustry.com/" },
+        { "type": "email", "value": "info@osadaindustry.com", "sourceUrl": "https://www.osadaindustry.com/" },
+        { "type": "form", "value": "https://osadaindustry.com/contact/", "sourceUrl": "https://www.osadaindustry.com/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、工場の安全柵・中二階デッキ・階段などを現地調査から設計・製作・設置まで行う工場安全対策工事と、安全衛生会議の運営支援「あんぜん番頭」を行っていると記載されている", "sourceUrl": "https://www.osadaindustry.com/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、従業員20名、時間外労働時間や有休残数の見える化を行ったと掲載されている", "sourceUrl": "PREF:7" }
+      ],
+      "clues": ["documents", "handoff"],
+      "hypotheses": ["現地調査から設計・製作・設置までの案件進捗と見積を一元管理できる可能性がある"],
+      "questions": ["現地調査から見積提出までの流れ", "案件の進捗を社内でどのように共有しているか"],
+      "scores": {
+        "fit": { "value": 4, "reason": "現地調査→設計→製作→設置と工程の受け渡しが多い" },
+        "needs": { "value": 3, "reason": "社内の見える化に取り組んだ実績がある" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "代表電話・メール・問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "テラオライテック株式会社",
+      "municipality": "越前市",
+      "address": "越前市本保町8-5-1",
+      "industry": "建設業（総合設備工事・電気工事）",
+      "links": { "website": "https://www.teraolitech.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0778-22-5215", "sourceUrl": "https://www.teraolitech.jp/" },
+        { "type": "form", "value": "https://www.teraolitech.jp/contact/", "sourceUrl": "https://www.teraolitech.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、設備工事部、電気工事部、ライフスタイル事業部、海外事業部、カーボンニュートラル事業があると記載されている", "sourceUrl": "https://www.teraolitech.jp/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、総合設備工事業、従業員50名と掲載されている", "sourceUrl": "PREF:24" }
+      ],
+      "clues": ["handoff", "multisite"],
+      "hypotheses": ["複数事業部にまたがる案件や問い合わせの受け渡しを整理できる可能性がある"],
+      "questions": ["事業部間で案件を引き継ぐ方法", "メンテナンスやサポートの依頼はどう受け付けているか"],
+      "scores": {
+        "fit": { "value": 3, "reason": "複数事業部があり、案件の受け渡しが想定される" },
+        "needs": { "value": 2, "reason": "業務課題に関する公開情報は少ない" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "電話と問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "山惣ホーム株式会社",
+      "municipality": "高浜町",
+      "address": "大飯郡高浜町中山50-22-5",
+      "industry": "建設業（新築・リフォーム・土木・不動産）",
+      "links": { "website": "https://yamasohome.co.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0770-72-5677", "sourceUrl": "https://yamasohome.co.jp/" },
+        { "type": "form", "value": "https://yamasohome.co.jp/contact/", "sourceUrl": "https://yamasohome.co.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、新築・リフォーム・エクステリア、土木、不動産を手がけ、公共工事を含む施工実績と採用情報を掲載している", "sourceUrl": "https://yamasohome.co.jp/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、従業員48名、杜仲の栽培・製造・販売も一貫して行っていると掲載されている", "sourceUrl": "PREF:31" }
+      ],
+      "clues": ["documents", "handoff"],
+      "hypotheses": ["リフォームの問い合わせから見積・工程・アフター対応までの記録を整理できる可能性がある"],
+      "questions": ["リフォームの問い合わせから見積までの流れ", "建築・土木・不動産・杜仲茶の各事業で情報をどう共有しているか"],
+      "scores": {
+        "fit": { "value": 4, "reason": "複数事業で見積・工程・顧客対応が発生する" },
+        "needs": { "value": 3, "reason": "事業の幅が広く情報共有の負担が想定される（未確認）" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "代表電話と問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "福登建設株式会社",
+      "municipality": "福井市",
+      "address": "福井市花堂北2-15-21",
+      "industry": "建設業（建築設計・施工）",
+      "links": { "website": "https://www.fukutoh.co.jp/" },
+      "contacts": [
+        { "type": "form", "value": "https://www.fukutoh.co.jp/contact/", "sourceUrl": "https://www.fukutoh.co.jp/" }
+      ],
+      "facts": [
+        { "text": "福井県SDGs事例集（令和4年度）に、建築設計・施工、創業1931年、従業員4名、非住宅施設に県産材を活用した木造建築を提案していると掲載されている", "sourceUrl": "PREF:39" }
+      ],
+      "clues": ["documents"],
+      "hypotheses": ["少人数のため、見積・図面・工程の書類作成を省力化できる可能性がある"],
+      "questions": ["見積書や工程表はどのように作成しているか", "少人数で負担になっている事務作業はあるか"],
+      "scores": {
+        "fit": { "value": 3, "reason": "設計・施工の書類作成が発生する" },
+        "needs": { "value": 2, "reason": "業務課題に関する公開情報は少ない" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 3, "reason": "問い合わせフォームのみ確認" }
+      }
+    },
+    {
+      "name": "合同会社木創",
+      "municipality": "若狭町",
+      "address": "三方上中郡若狭町関58-14",
+      "industry": "建設業（家づくり・古民家改修）",
+      "links": { "website": "https://mokusou-wakasa.com/" },
+      "contacts": [
+        { "type": "form", "value": "https://mokusou-wakasa.com/contact2", "sourceUrl": "https://mokusou-wakasa.com/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、福井・滋賀を中心に家づくり、古民家改修、DIYを手伝っていると記載されている", "sourceUrl": "https://mokusou-wakasa.com/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、従業員2名、古民家を改修したDIYスペース「KAYABUKI BASE」を運営していると掲載されている", "sourceUrl": "PREF:46" }
+      ],
+      "clues": ["handoff"],
+      "hypotheses": ["問い合わせ・見積・DIYスペースの利用受付を簡単な仕組みにまとめられる可能性がある"],
+      "questions": ["問い合わせや見学の予約はどのように受け付けているか", "見積書の作成方法"],
+      "scores": {
+        "fit": { "value": 2, "reason": "少人数のため業務量は小さいと考えられる" },
+        "needs": { "value": 1, "reason": "業務課題の手がかりは少ない" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 3, "reason": "問い合わせフォームのみ確認" }
+      }
+    },
+    {
+      "name": "石森電通システム株式会社",
+      "municipality": "大野市",
+      "address": "大野市中挟1丁目518",
+      "industry": "電気通信工事・融雪設備・ドローン事業",
+      "links": { "website": "https://ids-fukui.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0779-66-0774", "sourceUrl": "https://ids-fukui.jp/" },
+        { "type": "form", "value": "https://ids-fukui.jp/inquiry/", "sourceUrl": "https://ids-fukui.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、本社（大野市）、福井営業所、金沢営業所、加賀出張所があり、通信インフラ、電気土木、ドローン、省エネ融雪の事業を行っていると記載されている", "sourceUrl": "https://ids-fukui.jp/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、従業員15名、融雪装置の施工やドローンによる農薬散布を請け負っていると掲載されている", "sourceUrl": "PREF:45" }
+      ],
+      "clues": ["multisite", "recurring", "handoff"],
+      "hypotheses": ["ドローン散布や融雪工事の依頼受付・日程・作業記録を整理できる可能性がある"],
+      "questions": ["ドローン散布の依頼受付と日程調整はどう行っているか", "4拠点間で工事の情報をどう共有しているか"],
+      "scores": {
+        "fit": { "value": 4, "reason": "4拠点・複数事業で依頼受付と日程調整が発生する" },
+        "needs": { "value": 3, "reason": "少人数で多拠点を運営している" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "本社電話と問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "株式会社平田不動産",
+      "municipality": "小浜市",
+      "address": "小浜市四谷町9-18",
+      "industry": "不動産業・ライフサポート事業",
+      "links": { "website": "https://www.hiratafudousan.com/" },
+      "contacts": [
+        { "type": "phone", "value": "0770-53-3588", "sourceUrl": "https://www.hiratafudousan.com/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、福井県知事指定の住宅確保要配慮者居住支援法人であることと、売買物件のメール配信が記載されている", "sourceUrl": "https://www.hiratafudousan.com/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、不動産事業・ライフサポート事業、従業員21名と掲載されている", "sourceUrl": "PREF:22" }
+      ],
+      "clues": ["handoff", "recurring"],
+      "hypotheses": ["物件の問い合わせ・内見・入居者対応の記録を整理できる可能性がある"],
+      "questions": ["物件の問い合わせと内見予約の管理方法", "居住支援の相談記録はどう残しているか"],
+      "scores": {
+        "fit": { "value": 3, "reason": "問い合わせ・内見・入居対応を複数人で引き継ぐ業態" },
+        "needs": { "value": 2, "reason": "業務課題に関する公開情報は少ない" },
+        "feasibility": { "value": null, "reason": "不動産管理システムの利用状況は未確認" },
+        "reach": { "value": 4, "reason": "代表電話あり。問い合わせフォームは未確認" }
+      }
+    },
+    {
+      "name": "伸海エンジニアリング株式会社",
+      "municipality": "坂井市",
+      "address": "坂井市三国町山岸39-50",
+      "industry": "上下水道施設の維持管理・警備・清掃",
+      "links": { "website": "https://www.shinkai-e.co.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-81-6066", "sourceUrl": "https://www.shinkai-e.co.jp/" },
+        { "type": "email", "value": "info@shinkai-e.co.jp", "sourceUrl": "https://www.shinkai-e.co.jp/" },
+        { "type": "form", "value": "https://www.shinkai-e.co.jp/contact/", "sourceUrl": "https://www.shinkai-e.co.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、上下水道施設の維持管理、警備業務、清掃業務、環境衛生管理を行っていると記載されている", "sourceUrl": "https://www.shinkai-e.co.jp/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、従業員205名、事業を発展させる上で人材不足が大きな課題になっていると掲載されている", "sourceUrl": "PREF:79" }
+      ],
+      "clues": ["recurring", "multisite", "documents"],
+      "hypotheses": ["施設の巡回点検記録・報告書作成や、警備・清掃の人員配置を整理できる可能性がある"],
+      "questions": ["点検記録と報告書はどのように作成しているか", "現場ごとの人員配置をどう管理しているか"],
+      "scores": {
+        "fit": { "value": 5, "reason": "維持管理・警備・清掃はいずれも定期的に繰り返す業務" },
+        "needs": { "value": 4, "reason": "人材不足を大きな課題と公表している" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "代表電話・メール・問い合わせページあり" }
+      }
+    },
+    {
+      "name": "株式会社増田喜",
+      "municipality": "福井市",
+      "address": "福井市乾徳2丁目6番6号",
+      "industry": "古紙リサイクル・機密文書処理",
+      "links": { "website": "https://www.masudaki.co.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-27-2169", "sourceUrl": "https://www.masudaki.co.jp/" },
+        { "type": "form", "value": "https://www.masudaki.co.jp/contact/", "sourceUrl": "https://www.masudaki.co.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、古紙回収、オフィス向けネット回収依頼サービス「エコ紙くらぶ」、機密文書処理を行い、本社と福井・奥越・武生・敦賀・小松の営業所があると記載されている", "sourceUrl": "https://www.masudaki.co.jp/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、従業員54名と掲載されている", "sourceUrl": "PREF:61" }
+      ],
+      "clues": ["recurring", "multisite", "handoff"],
+      "hypotheses": ["回収依頼の受付から配車・回収実績・証明書の発行までを整理できる可能性がある（ネット受付はすでにある）"],
+      "questions": ["回収依頼から配車までの流れ", "機密文書処理の証明書はどのように作成しているか"],
+      "scores": {
+        "fit": { "value": 4, "reason": "定期回収と依頼受付が繰り返し発生し、営業所も複数ある" },
+        "needs": { "value": 3, "reason": "業務課題に関する公開情報は少ないが、拠点数が多い" },
+        "feasibility": { "value": null, "reason": "既存のネット受付の仕組みは未確認" },
+        "reach": { "value": 5, "reason": "本社電話と問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "若越印刷株式会社",
+      "municipality": "敦賀市",
+      "address": "敦賀市衣掛町413番地",
+      "industry": "印刷業",
+      "links": { "website": "https://www.jakuetsu-print.com/" },
+      "contacts": [
+        { "type": "phone", "value": "0770-22-5600", "sourceUrl": "https://www.jakuetsu-print.com/" },
+        { "type": "form", "value": "https://jakuetsu-print.com/contact", "sourceUrl": "https://www.jakuetsu-print.com/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、敦賀の本社・工場と東京支店があり、紙製クリアファイル、名入れ・レーザー加工、集中購買などを手がけていると記載されている", "sourceUrl": "https://www.jakuetsu-print.com/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、従業員50名と掲載されている", "sourceUrl": "PREF:60" }
+      ],
+      "clues": ["handoff", "documents", "multisite"],
+      "hypotheses": ["印刷物の受注から校正確認・納品までのやり取りを整理できる可能性がある"],
+      "questions": ["受注から校正確認までのやり取りの方法", "集中購買サービスの受発注をどう管理しているか"],
+      "scores": {
+        "fit": { "value": 4, "reason": "受注・校正・納品で社内外の受け渡しが多い" },
+        "needs": { "value": 2, "reason": "業務課題に関する公開情報は少ない" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "本社電話と問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "株式会社マップトラベル",
+      "municipality": "敦賀市",
+      "address": "敦賀市中央町2丁目11-33 センタービル1階",
+      "industry": "旅行業",
+      "links": { "website": "https://www.maptravel.co.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0770-24-4500", "sourceUrl": "https://www.maptravel.co.jp/" },
+        { "type": "form", "value": "https://www.maptravel.co.jp/contact/", "sourceUrl": "https://www.maptravel.co.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、個人・団体の国内外旅行のほか、婚活サポート、ふるさとサポート、オンラインストア、酒類販売、キャラクター事業を行っていると記載されている", "sourceUrl": "https://www.maptravel.co.jp/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、従業員9名と掲載されている", "sourceUrl": "PREF:76" }
+      ],
+      "clues": ["handoff", "recurring"],
+      "hypotheses": ["少人数で多くの事業を運営しているため、問い合わせ・申込の受付を一元化できる可能性がある"],
+      "questions": ["事業ごとの問い合わせをどのように受けているか", "団体旅行の手配で手間がかかる工程は何か"],
+      "scores": {
+        "fit": { "value": 4, "reason": "旅行手配は申込・確認・連絡の受け渡しが多い" },
+        "needs": { "value": 3, "reason": "9名で6つ以上の事業を運営している" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "代表電話と問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "株式会社米五",
+      "municipality": "福井市",
+      "address": "福井市春山2丁目15-26",
+      "industry": "食品製造・販売（味噌）",
+      "links": { "website": "https://www.komego.com/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-24-0081", "sourceUrl": "https://www.komego.com/" },
+        { "type": "email", "value": "komego@misoya.com", "sourceUrl": "https://www.komego.com/" },
+        { "type": "form", "value": "https://www.misoya.com/contact/form.aspx", "sourceUrl": "https://www.komego.com/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、オンラインショップと「ショップ&カフェみそ楽」が掲載されている", "sourceUrl": "https://www.komego.com/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、創業1831年、従業員22名、味噌の量り売り、小学校での出前味噌作り教室、工場見学の受け入れを行っていると掲載されている", "sourceUrl": "PREF:74" }
+      ],
+      "clues": ["handoff", "recurring"],
+      "hypotheses": ["通販・店舗・カフェ・教室の受注や予約を整理できる可能性がある"],
+      "questions": ["通販と店舗の受注・在庫をどう管理しているか", "工場見学や教室の申込はどう受け付けているか"],
+      "scores": {
+        "fit": { "value": 3, "reason": "通販・店舗・カフェ・教室と受付窓口が複数ある" },
+        "needs": { "value": 2, "reason": "業務課題に関する公開情報は少ない" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "電話・メール・問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "株式会社土田鶏卵",
+      "municipality": "福井市",
+      "address": "福井市御幸2丁目25-44",
+      "industry": "食品製造・卸売（鶏卵・卵加工食品）",
+      "links": { "website": "https://www.t-tamago.co.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-23-4332", "sourceUrl": "https://www.t-tamago.co.jp/index.html" },
+        { "type": "form", "value": "https://www.t-tamago.co.jp/contact/", "sourceUrl": "https://www.t-tamago.co.jp/index.html" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、鶏卵生産、卵加工食品、卸販売を行い、本社GPセンター・下中GPセンター・LEセンターの3拠点があると記載されている", "sourceUrl": "https://www.t-tamago.co.jp/index.html" },
+        { "text": "福井県SDGs事例集（令和4年度）に、従業員71名（2022年11月時点）と掲載されている", "sourceUrl": "PREF:69" }
+      ],
+      "clues": ["multisite", "recurring"],
+      "hypotheses": ["卸先からの定期受注と出荷・配送の管理を整理できる可能性がある"],
+      "questions": ["卸先からの受注はどの方法（電話・FAXなど）で受けているか", "センター間で出荷情報をどう共有しているか"],
+      "scores": {
+        "fit": { "value": 4, "reason": "3拠点で定期的な受注・出荷が発生する" },
+        "needs": { "value": 2, "reason": "業務課題に関する公開情報は少ない" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "本社電話と問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "株式会社ナカノ",
+      "municipality": "坂井市",
+      "address": "坂井市春江町随応寺16-11",
+      "industry": "小売業（精肉・惣菜・農産物直売）",
+      "links": { "website": "https://www.29nakano.co.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-51-5990", "sourceUrl": "https://www.29nakano.co.jp/" },
+        { "type": "form", "value": "https://www.29nakano.co.jp/inquiry/", "sourceUrl": "https://www.29nakano.co.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、所在地は坂井市春江町随応寺16-11、TEL/FAX 0776-51-5990と記載されている", "sourceUrl": "https://www.29nakano.co.jp/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、精肉小売、惣菜製造販売、農産物直売、従業員36名と掲載されている（当時の住所は春江町為国幸11-6）", "sourceUrl": "PREF:12" }
+      ],
+      "clues": ["recurring", "handoff"],
+      "hypotheses": ["惣菜・ギフトの予約注文や生産者との連絡を整理できる可能性がある"],
+      "questions": ["予約注文はどのように受けているか", "生産者との連絡や仕入れの管理方法"],
+      "scores": {
+        "fit": { "value": 3, "reason": "精肉・惣菜・直売と複数の販売形態がある" },
+        "needs": { "value": 2, "reason": "業務課題に関する公開情報は少ない" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "電話と問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "水口木材株式会社",
+      "municipality": "福井市",
+      "address": "福井市西方2丁目11-8",
+      "industry": "木材流通・製材",
+      "links": { "website": "https://mizuguchi-wood.co.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-27-1150", "sourceUrl": "https://mizuguchi-wood.co.jp/" },
+        { "type": "email", "value": "info@mizuguchi-wood.co.jp", "sourceUrl": "https://mizuguchi-wood.co.jp/" },
+        { "type": "form", "value": "https://mizuguchi-wood.co.jp/#contact", "sourceUrl": "https://mizuguchi-wood.co.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、事業内容は木材の販売及び製材と記載されている", "sourceUrl": "https://mizuguchi-wood.co.jp/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、木材流通業、従業員14名、県産材の端材を使ったワークショップを開催していると掲載されている", "sourceUrl": "PREF:71" }
+      ],
+      "clues": ["documents"],
+      "hypotheses": ["見積・受注・在庫確認の作業を整理できる可能性がある"],
+      "questions": ["工務店などからの見積依頼をどう受けているか", "在庫の確認はどのように行っているか"],
+      "scores": {
+        "fit": { "value": 3, "reason": "見積・受注が繰り返し発生すると考えられる" },
+        "needs": { "value": 1, "reason": "業務課題の手がかりは少ない" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "電話・メール・問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "株式会社パッケイ",
+      "municipality": "福井市",
+      "address": "福井市運動公園1-2103",
+      "industry": "製造業（ショッピングバッグ等の包装資材）",
+      "links": { "website": "https://www.pac-k.com/" },
+      "contacts": [
+        { "type": "form", "value": "https://www.pac-k.com/inquiry/", "sourceUrl": "https://www.pac-k.com/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、オリジナルショッピングバッグの製造・販売と、バッグの保管と各店舗への配送を行う物流サービスが記載されている", "sourceUrl": "https://www.pac-k.com/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、従業員7名と掲載されている", "sourceUrl": "PREF:50" }
+      ],
+      "clues": ["handoff", "multisite", "documents"],
+      "hypotheses": ["オリジナル袋の見積・仕様確認から、預かり在庫・店舗配送までの管理を整理できる可能性がある"],
+      "questions": ["見積から仕様確定までのやり取りの方法", "預かり在庫と店舗への配送をどう管理しているか"],
+      "scores": {
+        "fit": { "value": 4, "reason": "見積・仕様確認・在庫・配送と受け渡しが多い" },
+        "needs": { "value": 2, "reason": "業務課題に関する公開情報は少ない" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 3, "reason": "問い合わせフォームのみ確認" }
+      }
+    },
+    {
+      "name": "有限会社笹尾印刷所",
+      "municipality": "鯖江市",
+      "address": "鯖江市丸山町4丁目2-31",
+      "industry": "印刷業・和紙製品",
+      "links": { "website": "https://kankyoushi.sasao-print.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0778-51-1585", "sourceUrl": "https://kankyoushi.sasao-print.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、「ご当地SDGs和紙」や機能性漆喰和紙「銀雪」を製造していると記載されている", "sourceUrl": "https://kankyoushi.sasao-print.jp/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、印刷業、従業員7名と掲載されている", "sourceUrl": "PREF:37" }
+      ],
+      "clues": ["documents"],
+      "hypotheses": ["少人数のため、受注・見積・発送の事務を省力化できる可能性がある"],
+      "questions": ["受注から見積までの流れ", "和紙製品の注文はどのように受けているか"],
+      "scores": {
+        "fit": { "value": 2, "reason": "少人数のため業務量は小さいと考えられる" },
+        "needs": { "value": 1, "reason": "業務課題の手がかりは少ない" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 4, "reason": "電話あり。サイト内にフォームあり（URL未確認）" }
+      }
+    },
+    {
+      "name": "株式会社大麦倶楽部",
+      "municipality": "福井市",
+      "address": "福井市殿下町46-4-1",
+      "industry": "食品製造（六条大麦の加工品）",
+      "links": { "website": "https://www.oomugi-club.com/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-97-6369", "sourceUrl": "https://www.oomugi-club.com/" },
+        { "type": "form", "value": "https://www.oomugi-club.com/login/inquiryedit", "sourceUrl": "https://www.oomugi-club.com/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、六条大麦を使った食品の販売、自社製粉、オンラインショップが記載されている", "sourceUrl": "https://www.oomugi-club.com/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、従業員4名、麦ストローの出前講座やワークショップを開催していると掲載されている", "sourceUrl": "PREF:73" }
+      ],
+      "clues": ["recurring", "handoff"],
+      "hypotheses": ["通販の受注と、講座・ワークショップの申込をまとめて管理できる可能性がある"],
+      "questions": ["通販の受注処理の方法", "講座・ワークショップの申込はどう受けているか"],
+      "scores": {
+        "fit": { "value": 3, "reason": "通販と講座の申込受付が発生する" },
+        "needs": { "value": 2, "reason": "少人数で製造・販売・講座を運営している" },
+        "feasibility": { "value": null, "reason": "業務手順は公開情報では未確認" },
+        "reach": { "value": 5, "reason": "電話と問い合わせフォームあり" }
+      }
+    },
+    {
+      "name": "ラニイ福井貨物株式会社",
+      "municipality": "福井市",
+      "address": "福井市和田中町113-1",
+      "industry": "運輸業（トラック輸送・倉庫・3PL）",
+      "links": { "website": "https://www.runi.co.jp/" },
+      "contacts": [
+        { "type": "phone", "value": "0776-80-0300", "sourceUrl": "https://www.runi.co.jp/" },
+        { "type": "form", "value": "https://www.runi.co.jp/contact/", "sourceUrl": "https://www.runi.co.jp/" }
+      ],
+      "facts": [
+        { "text": "公式サイトに、トラック輸送を軸に倉庫業・3PL事業を展開し、北陸3県・関西・中京・関東に14拠点があると記載されている", "sourceUrl": "https://www.runi.co.jp/" },
+        { "text": "福井県SDGs事例集（令和4年度）に、従業員432名と掲載されている", "sourceUrl": "PREF:28" }
+      ],
+      "clues": ["multisite", "recurring", "handoff"],
+      "hypotheses": ["特定の部署や拠点の小さな業務（点検記録・社内申請など）から改善を提案できる可能性がある"],
+      "questions": ["拠点ごとに紙やExcelで回している業務はあるか", "社内システムの担当部署はどこか"],
+      "scores": {
+        "fit": { "value": 3, "reason": "14拠点で配車・保管の業務が繰り返し発生する" },
+        "needs": { "value": 2, "reason": "規模が大きく、既存システムがある可能性が高い" },
+        "feasibility": { "value": 2, "reason": "規模が大きく、全社導入より部署単位の提案が現実的" },
+        "reach": { "value": 5, "reason": "代表電話と問い合わせページあり" }
+      }
+    },
+    {
+      "name": "株式会社新内",
+      "municipality": "福井市",
+      "address": "福井市花堂中1丁目5-6",
+      "industry": "建設業（土木・舗装・建築・除雪）",
+      "links": { "website": "https://shinnai.info/" },
+      "contacts": [],
+      "facts": [
+        { "text": "福井市の企業紹介に、従業員29人、土木・舗装・建築工事を軸とした地域のインフラ整備に従事していると掲載されている", "sourceUrl": "CITY:04" }
+      ],
+      "clues": ["documents"],
+      "hypotheses": ["現場の書類や除雪の出動記録を整理できる可能性がある"],
+      "questions": [],
+      "scores": {
+        "fit": { "value": 3, "reason": "土木・舗装・除雪で現場記録が発生する" },
+        "needs": { "value": null, "reason": "" },
+        "feasibility": { "value": null, "reason": "" },
+        "reach": { "value": null, "reason": "公式サイトに電話・フォームの記載が見つからない" }
+      },
+      "memo": "公式サイトのトップに連絡先の記載なし。Gビズインフォや電話帳で代表番号を確認する"
+    },
+    {
+      "name": "株式会社勝木書店",
+      "municipality": "福井市",
+      "address": "福井市大願寺3丁目8-1",
+      "industry": "小売業（書籍・雑誌・文具）、外商、図書館運営",
+      "links": { "website": "https://www.katsuki-books.jp/" },
+      "contacts": [
+        { "type": "sns", "value": "https://x.com/sk_shinninomiya", "sourceUrl": "CITY:11" }
+      ],
+      "facts": [
+        { "text": "福井市の企業紹介に、従業員210人、書籍・雑誌・文具等の販売、外商および図書館運営業務を行い、SuperKaBoS二の宮本店などの店舗があると掲載されている", "sourceUrl": "CITY:11" }
+      ],
+      "clues": ["multisite", "handoff"],
+      "hypotheses": ["店舗間の取り寄せや外商の受注を整理できる可能性がある"],
+      "questions": [],
+      "scores": {
+        "fit": { "value": 3, "reason": "複数店舗・外商・図書館運営と業務の幅が広い" },
+        "needs": { "value": null, "reason": "" },
+        "feasibility": { "value": null, "reason": "" },
+        "reach": { "value": null, "reason": "本社の代表連絡先は未確認（公式Xは店舗アカウント）" }
+      },
+      "needsReview": true,
+      "memo": "公式サイトの本社連絡先を確認できなかった（ページの文字コードの問題で自動取得できず）。サイトの会社概要を目視で確認する"
+    },
+    {
+      "name": "株式会社ホンダベルノ福井（Honda Cars福井北）",
+      "municipality": "福井市",
+      "address": "福井市今市町66-1-1（今市店）",
+      "industry": "自動車販売・整備（Honda正規ディーラー）",
+      "links": { "website": "https://www.hondacars-fukuikita.co.jp/" },
+      "contacts": [
+        { "type": "sns", "value": "https://www.instagram.com/hondacars_fukuikita/", "sourceUrl": "CITY:16" }
+      ],
+      "facts": [
+        { "text": "福井市の企業紹介に、従業員51人、今市店・武生本保店・北インター店の3店舗、勉強会や修理説明・決済に電子端末を使用していると掲載されている", "sourceUrl": "CITY:16" }
+      ],
+      "clues": ["multisite", "recurring"],
+      "hypotheses": ["3店舗間の整備・車検予約や顧客フォローの共有を整理できる可能性がある"],
+      "questions": [],
+      "scores": {
+        "fit": { "value": 3, "reason": "3店舗で整備・車検の予約が繰り返し発生する" },
+        "needs": { "value": null, "reason": "" },
+        "feasibility": { "value": null, "reason": "メーカーのシステムを利用している可能性がある" },
+        "reach": { "value": null, "reason": "会社の代表連絡先は未確認（店舗の電話番号は公式サイトで確認が必要）" }
+      },
+      "needsReview": true,
+      "memo": "公式サイトの店舗ページで電話番号を確認する"
+    }
+  ]
+}
