@@ -53,6 +53,17 @@ async function requireSession(): Promise<CloudSession | null> {
   return u ? { userId: u.id, email: u.email ?? "" } : null;
 }
 
+/** サーバー（/api/…）に本人であることを伝えるための通行証。未ログインなら null */
+export async function currentAccessToken(): Promise<string | null> {
+  if (!cloudConfig().configured) return null;
+  try {
+    const { data } = await sb().auth.getSession();
+    return data.session?.access_token ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export const supabaseCloudStore: CloudStore & { isAllowed(): Promise<CloudResult<boolean>> } = {
   label: "クラウド（Supabase）",
   configured: true,

@@ -19,6 +19,9 @@ import { eventIdForTodo, isValidClientId, normalizeEvent } from "../src/services
 import type { GCalEvent } from "../src/lib/types";
 import { buildTodayGroups } from "../src/lib/todayGroups";
 import { parseYouTubeUrl, seminarLineText } from "../src/lib/youtube";
+import { createHmac } from "node:crypto";
+import { retryKeyFor, verifyLineSignature } from "../src/server/line";
+import { chunk, classifyLineText, deliveryText, episodesToDeliver, latestDeliveredEpisode, quotaAllows, subscribeReply } from "../src/lib/lineLogic";
 import { checkRevision, dataFingerprint, decideAutoSync, decideInitialSync, isPristineTodo, sameSummary, mediaPath, mergeDeviceSettings, prepareForCloud, realLookingRecords, summarizeData, validateAppDataShape } from "../src/lib/cloudSync";
 
 let failed = 0;
@@ -493,6 +496,41 @@ ok(!!sp.fields.purpose && !!sp.fields.content && !!sp.fields.measurements && !!s
   ok(!parseYouTubeUrl("https://example.com/watch?v=dQw4w9WgXcQ").ok && !parseYouTubeUrl("https://evil-youtube.com/watch?v=dQw4w9WgXcQ").ok && !parseYouTubeUrl("").ok, "YouTube以外のサイトや空欄は受け付けない");
   const text = seminarLineText("投球フォームの基本", `https://youtu.be/${id}`);
   ok(text.includes("投球フォームの基本") && text.includes(`https://youtu.be/${id}`), "公式LINEの配信文に、テーマと動画のURLが入る");
+}
+
+// ---------- 公式LINE：自動返信・配信日の一斉送信のルール ----------
+{
+  const u = (id: string) => `https://youtu.be/${id}`;
+  const eps = [
+    { id: "s1", deliveryDate: "2026-11-16", theme: "テーマA", youtubeUrl: u("AAAAAAAAAAA") },
+    { id: "s2", deliveryDate: "2026-11-20", theme: "テーマB", youtubeUrl: u("BBBBBBBBBBB") },
+    { id: "s3", deliveryDate: "2026-11-23", theme: "テーマC", youtubeUrl: u("CCCCCCCCCCC") },
+    { id: "s4", deliveryDate: "2026-11-27", theme: "テーマD" },
+  ];
+  ok(classifyLineText("セミナー") === "subscribe" && classifyLineText("プチセミナー見たいです") === "subscribe" && classifyLineText("配信停止") === "stop" && classifyLineText("セミナー 配信停止") === "stop" && classifyLineText("こんにちは") === "other", "「セミナー」は申込、「配信停止」は停止、それ以外は返信しない");
+  ok(latestDeliveredEpisode(eps, "2026-11-22")?.id === "s2" && latestDeliveredEpisode(eps, "2026-11-20")?.id === "s2" && latestDeliveredEpisode(eps, "2026-11-15") === null, "返信で案内するのは、配信日を迎えた回のうちURLのある最新の回（配信前の回のURLは渡さない）");
+  ok(episodesToDeliver(eps, "2026-11-23").map((e) => e.id).join() === "s3" && episodesToDeliver(eps, "2026-11-27").length === 0, "一斉送信は、今日が配信日でURLのある回だけ");
+  const r1 = subscribeReply(eps, "2026-11-22", true);
+  ok(r1.includes(u("BBBBBBBBBBB")) && !r1.includes(u("CCCCCCCCCCC")) && r1.includes("お申し込みありがとうございます") && r1.includes("配信停止"), "初めての申込には、最新回のURL・次回からも送る案内・停止の方法を返す");
+  const r2 = subscribeReply(eps, "2026-11-22", false);
+  ok(r2.includes(u("BBBBBBBBBBB")) && !r2.includes("お申し込みありがとうございます"), "2回目以降はURLだけ（案内文は繰り返さない）");
+  ok(subscribeReply(eps, "2026-11-10", true).includes("準備中"), "まだ動画がなければ「準備中」と返す");
+  const withDraft = { ...eps[2], lineDraft: { text: `カスタム文面\n${u("CCCCCCCCCCC")}`, date: "", time: "", attachThumbnail: false, attachVideo: false, savedAt: "" } };
+  ok(deliveryText(withDraft).startsWith("カスタム文面") && deliveryText(eps[2]).includes(u("CCCCCCCCCCC")) && deliveryText(eps[2]).includes("配信停止"), "一斉送信の文面は、URL入りの下書きがあればそれを使い、停止の方法を添える");
+  const big = Array.from({ length: 1201 }, (_, i) => `U${i}`);
+  ok(chunk(big).map((c) => c.length).join() === "500,500,201", "一斉送信は500人ずつに分けて送る");
+  {
+    const prev = process.env.LINE_CHANNEL_SECRET;
+    process.env.LINE_CHANNEL_SECRET = "test-secret-for-check";
+    const body = JSON.stringify({ events: [] });
+    const sig = createHmac("sha256", "test-secret-for-check").update(body, "utf8").digest("base64");
+    ok(verifyLineSignature(body, sig) && !verifyLineSignature(body + " ", sig) && !verifyLineSignature(body, null) && !verifyLineSignature(body, "AAAA"), "LINEからの通知は署名を確認し、改ざん・署名なしは受け付けない");
+    if (prev === undefined) delete process.env.LINE_CHANNEL_SECRET;
+    else process.env.LINE_CHANNEL_SECRET = prev;
+    const k = retryKeyFor("ep1", 0);
+    ok(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(k) && k === retryKeyFor("ep1", 0) && k !== retryKeyFor("ep1", 1), "再送キーは回とまとまりごとに常に同じ（再試行しても二重に届かない）");
+  }
+  ok(quotaAllows({ type: "limited", value: 200 }, 190, 10).ok && !quotaAllows({ type: "limited", value: 200 }, 195, 10).ok && quotaAllows({ type: "limited", value: 200 }, 195, 10).remaining === 5 && quotaAllows({ type: "none" }, 9999, 500).ok, "今月の残り通数が足りないときは送らない");
 }
 
 console.log(failed === 0 ? "\nすべて成功" : `\n${failed}件失敗`);

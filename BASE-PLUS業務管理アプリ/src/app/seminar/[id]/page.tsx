@@ -16,6 +16,7 @@ import { VideoFrameCapture, type CapturedFrame } from "@/components/VideoFrameCa
 import { DemoBadge, Empty, OffBadge } from "@/components/ui";
 import { SEMINAR_STATUS } from "@/lib/seminar";
 import { parseYouTubeUrl, seminarLineText, youtubeThumb } from "@/lib/youtube";
+import { LinePanel } from "@/components/LinePanel";
 import { EpisodeTasks } from "@/components/SeminarRules";
 
 export default function SeminarDetailPage() {
@@ -117,6 +118,8 @@ function Detail({ ep }: { ep: SeminarEpisode }) {
           </div>
         </details>
       </div>
+
+      <LinePanel ep={ep} />
 
       <LineSection ep={ep} />
 
