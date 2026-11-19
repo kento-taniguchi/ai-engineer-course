@@ -1,0 +1,9 @@
+# Vercel にアップロードしないもの（設定値・画面のスクリーンショット・作業用ファイル）
+.env
+.env.*
+node_modules
+.next
+out
+shots
+*.tsbuildinfo
+.vercel
