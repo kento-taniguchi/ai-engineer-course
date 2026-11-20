@@ -1,0 +1,16 @@
+{
+  "name": "dify-line-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LINEで受けたメッセージをDifyに渡し、AIの回答をLINEに返す中継プログラム",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@vercel/functions": "^3.0.0"
+  }
+}
