@@ -1,15 +1,15 @@
 // 月の集計・請求額の計算（画面や保存先に依存しない処理）
 import { UNIT_PRICES } from "@/config";
-import { compareMembers, isScheduledOn } from "./members";
+import { compareMembers, copayRatioFor, isScheduledOn } from "./members";
 import { daysInMonth, monthOf } from "./dates";
-import type { DateKey, DayRecord, Member, MonthKey } from "./types";
+import type { CopayRatio, DateKey, DayRecord, Member, MonthKey } from "./types";
 
-/** その月に適用する1回あたりの単価 */
-export function unitPriceFor(ym: MonthKey): number {
+/** その月・その負担割合で適用する1回あたりの単価 */
+export function unitPriceFor(ym: MonthKey, ratio: CopayRatio = 1): number {
   const sorted = [...UNIT_PRICES].sort((a, b) => a.from.localeCompare(b.from));
-  let price = sorted[0]?.price ?? 0;
-  for (const p of sorted) if (p.from <= ym) price = p.price;
-  return price;
+  let prices = sorted[0]?.prices;
+  for (const p of sorted) if (p.from <= ym) prices = p.prices;
+  return prices?.[ratio] ?? 0;
 }
 
 export type MonthRow = {
@@ -17,6 +17,8 @@ export type MonthRow = {
   /** 利用した日（「利用」で保存された日だけ） */
   usedDates: DateKey[];
   count: number;
+  /** その月の介護保険の自己負担割合 */
+  ratio: CopayRatio;
   unitPrice: number;
   amount: number;
   /** 未確認のまま保存されている日 */
@@ -25,7 +27,6 @@ export type MonthRow = {
 
 export type MonthSummary = {
   ym: MonthKey;
-  unitPrice: number;
   rows: MonthRow[];
   totalCount: number;
   totalAmount: number;
@@ -34,7 +35,6 @@ export type MonthSummary = {
 };
 
 export function summarizeMonth(members: Member[], records: DayRecord[], ym: MonthKey, today: DateKey): MonthSummary {
-  const unitPrice = unitPriceFor(ym);
   const inMonth = records.filter((r) => monthOf(r.date) === ym);
   const used = new Map<string, DateKey[]>();
   const unconfirmed = new Map<string, DateKey[]>();
@@ -53,10 +53,13 @@ export function summarizeMonth(members: Member[], records: DayRecord[], ym: Mont
   );
   const rows: MonthRow[] = shown.sort(compareMembers).map((member) => {
     const usedDates = [...(used.get(member.id) ?? [])].sort();
+    const ratio = copayRatioFor(member, ym);
+    const unitPrice = unitPriceFor(ym, ratio);
     return {
       member,
       usedDates,
       count: usedDates.length,
+      ratio,
       unitPrice,
       amount: usedDates.length * unitPrice,
       unconfirmedDates: [...(unconfirmed.get(member.id) ?? [])].sort(),
@@ -68,7 +71,6 @@ export function summarizeMonth(members: Member[], records: DayRecord[], ym: Mont
   );
   return {
     ym,
-    unitPrice,
     rows,
     totalCount: rows.reduce((s, r) => s + r.count, 0),
     totalAmount: rows.reduce((s, r) => s + r.amount, 0),

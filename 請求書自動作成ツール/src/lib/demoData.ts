@@ -1,7 +1,7 @@
 // 試作版の架空データ（実在の人物とは関係ありません）
 import { addDays, addMonths, daysInMonth, monthOf, todayKey, weekdayOf } from "./dates";
 import { isScheduledOn } from "./members";
-import type { DateKey, DayEntry, DayRecord, Member } from "./types";
+import type { CopayRatio, DateKey, DayEntry, DayRecord, Member } from "./types";
 
 // [氏名, ふりがな, 曜日]  0=日 1=月 ... 6=土
 const PEOPLE: [string, string, number[]][] = [
@@ -57,6 +57,7 @@ export function createDemoData(now: Date = new Date()): { members: Member[]; day
     name,
     kana,
     schedules: [{ from: "2020-04-01", weekdays }],
+    copays: [{ from: "2020-04", ratio: 1 }],
     withdrawnOn: null,
     createdAt: nowIso,
     updatedAt: nowIso,
@@ -65,6 +66,15 @@ export function createDemoData(now: Date = new Date()): { members: Member[]; day
   // 曜日変更の例：西田 静子さん 今月1日から「月」→「火・木」
   const nishida = members.find((m) => m.name === "西田 静子")!;
   nishida.schedules.push({ from: `${thisMonth}-01`, weekdays: [2, 4] });
+  // 介護保険の負担割合：2割・3割の例
+  const setRatio = (name: string, ratio: CopayRatio) => {
+    members.find((m) => m.name === name)!.copays = [{ from: "2020-04", ratio }];
+  };
+  setRatio("上野 健二", 2);
+  setRatio("鈴木 幸子", 2);
+  setRatio("久保 文子", 3);
+  // 負担割合の変更の例：高橋 節子さん 今月分から 1割 → 2割（先月までの請求は1割のまま）
+  members.find((m) => m.name === "高橋 節子")!.copays.push({ from: thisMonth, ratio: 2 });
   // 退会の例：前田 隆さん 先月16日に退会
   const maeda = members.find((m) => m.name === "前田 隆")!;
   maeda.withdrawnOn = `${addMonths(thisMonth, -1)}-16`;

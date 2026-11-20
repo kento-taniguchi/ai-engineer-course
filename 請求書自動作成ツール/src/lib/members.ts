@@ -1,6 +1,6 @@
 // 会員の登録・変更・退会（画面や保存先に依存しない処理）
-import { weekdayOf } from "./dates";
-import type { DateKey, Member } from "./types";
+import { monthOf, weekdayOf } from "./dates";
+import type { CopayEntry, CopayRatio, DateKey, Member, MonthKey } from "./types";
 
 const normWeekdays = (w: number[]) => [...new Set(w)].filter((n) => n >= 0 && n <= 6).sort((a, b) => a - b);
 
@@ -15,18 +15,21 @@ export function nextMemberId(members: Member[]): string {
 
 export function createMember(
   members: Member[],
-  input: { name: string; kana?: string; weekdays: number[]; from: DateKey },
+  input: { name: string; kana?: string; weekdays: number[]; from: DateKey; copayRatio?: CopayRatio },
   nowIso = new Date().toISOString(),
 ): Member {
   const name = input.name.trim();
   if (!name) throw new Error("氏名を入力してください");
   const weekdays = normWeekdays(input.weekdays);
   if (weekdays.length === 0) throw new Error("利用曜日を1つ以上選んでください");
+  const ratio = input.copayRatio ?? 1;
+  if (!isCopayRatio(ratio)) throw new Error("負担割合は1割・2割・3割から選んでください");
   return {
     id: nextMemberId(members),
     name,
     kana: (input.kana ?? "").trim(),
     schedules: [{ from: input.from, weekdays }],
+    copays: [{ from: monthOf(input.from), ratio }],
     withdrawnOn: null,
     createdAt: nowIso,
     updatedAt: nowIso,
@@ -98,4 +101,43 @@ export function compareMembers(a: Member, b: Member): number {
     a.name.localeCompare(b.name, "ja") ||
     a.id.localeCompare(b.id)
   );
+}
+
+// ---- 介護保険の自己負担割合 ----
+
+/** 負担割合が未設定の古いデータは「1割」として扱います */
+export const DEFAULT_COPAY: CopayEntry = { from: "2000-01", ratio: 1 };
+
+export function isCopayRatio(v: unknown): v is CopayRatio {
+  return v === 1 || v === 2 || v === 3;
+}
+
+/** 保存先から読んだ会員データの形をそろえる（負担割合がない古いデータに1割を入れる） */
+export function normalizeMember(m: Member): Member {
+  const copays = Array.isArray(m.copays) ? m.copays.filter((c) => c && typeof c.from === "string" && isCopayRatio(c.ratio)) : [];
+  return { ...m, copays: copays.length ? copays : [DEFAULT_COPAY] };
+}
+
+/** その月の負担割合（設定開始前の月なら、最初の設定を使う） */
+export function copayRatioFor(m: Member, ym: MonthKey): CopayRatio {
+  const sorted = [...(m.copays ?? [])].sort((a, b) => a.from.localeCompare(b.from));
+  let ratio: CopayRatio = sorted[0]?.ratio ?? DEFAULT_COPAY.ratio;
+  for (const c of sorted) if (c.from <= ym) ratio = c.ratio;
+  return ratio;
+}
+
+/**
+ * 負担割合の変更（from の月の分から新しい割合）。
+ * それより前の月の設定は残すので、過去の月の請求額は変わりません。
+ * 同じ月以降に始まる設定は置き換え（取り消し）ます。
+ */
+export function changeCopay(m: Member, ratio: CopayRatio, from: MonthKey, nowIso = new Date().toISOString()): Member {
+  if (!isCopayRatio(ratio)) throw new Error("負担割合は1割・2割・3割から選んでください");
+  const kept = (m.copays ?? []).filter((c) => c.from < from);
+  return { ...m, copays: [...kept, { from, ratio }], updatedAt: nowIso };
+}
+
+/** 予定されている将来の負担割合の変更（指定月より後に始まるもの） */
+export function upcomingCopays(m: Member, ym: MonthKey): CopayEntry[] {
+  return (m.copays ?? []).filter((c) => c.from > ym).sort((a, b) => a.from.localeCompare(b.from));
 }

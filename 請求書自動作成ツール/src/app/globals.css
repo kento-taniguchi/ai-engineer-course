@@ -205,3 +205,30 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 15px; }
   .invoice { border: none; margin: 0; max-width: none; width: 210mm; min-height: 296mm; break-after: page; page-break-after: always; }
   .invoice:last-child { break-after: auto; page-break-after: auto; }
 }
+
+/* ---- 出欠表（横スクロールしても氏名の列を固定） ---- */
+.matrix-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+table.matrix { border-collapse: separate; border-spacing: 0; font-size: 14px; }
+.matrix th, .matrix td { border-bottom: 1px solid var(--line); border-right: 1px solid #eceeeb; text-align: center; padding: 6px 4px; min-width: 34px; white-space: nowrap; }
+.matrix thead th { background: #f7f8f6; color: var(--muted); font-size: 13px; line-height: 1.2; }
+.matrix thead th .wd { font-size: 11px; }
+.matrix thead th.sun { color: #a33b3b; }
+.matrix thead th.sat { color: #2f5a8a; }
+.matrix td { color: var(--primary); font-weight: 700; }
+.matrix .count { min-width: 48px; font-weight: 700; color: var(--text); }
+.matrix .sticky-col {
+  position: sticky; left: 0; z-index: 1;
+  background: var(--surface); text-align: left; padding: 6px 12px; min-width: 9em; font-weight: 600; color: var(--text);
+  border-right: 2px solid var(--line);
+}
+.matrix thead .sticky-col { background: #f7f8f6; z-index: 2; }
+.matrix tbody tr:last-child th, .matrix tbody tr:last-child td { border-bottom: none; }
+
+/* ---- 負担割合の選択 ---- */
+.ratio-picker { display: flex; gap: 6px; flex-wrap: wrap; }
+.ratio-picker button {
+  min-width: 112px; min-height: 52px; border-radius: 8px; border: 2px solid #b9c0bb; background: #fff;
+  font-weight: 700; font-size: 17px; color: var(--muted); line-height: 1.2; padding: 4px 10px;
+}
+.ratio-picker button .price { display: block; font-size: 12px; font-weight: 600; }
+.ratio-picker button[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: #fff; }

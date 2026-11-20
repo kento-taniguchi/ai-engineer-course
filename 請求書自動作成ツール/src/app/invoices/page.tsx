@@ -95,7 +95,7 @@ function Invoice({ row, ym, issued }: { row: MonthRow; ym: string; issued: strin
         <tbody>
           <tr>
             <td>{formatMonth(ym)}</td>
-            <td>サービス利用料</td>
+            <td>サービス利用料（自己負担{row.ratio}割）</td>
             <td className="num">{row.count}回</td>
             <td className="num">{yen(row.unitPrice)}</td>
             <td className="num">{yen(row.amount)}</td>

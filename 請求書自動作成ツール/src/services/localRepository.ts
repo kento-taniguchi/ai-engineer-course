@@ -2,6 +2,7 @@
 // ※ 別の端末・別のブラウザとは共有されません。ブラウザのデータを消すと記録も消えます。
 import { createDemoData } from "@/lib/demoData";
 import { monthOf } from "@/lib/dates";
+import { normalizeMember } from "@/lib/members";
 import type { DayRecord, Member } from "@/lib/types";
 import type { BackupData, Repository } from "./repository";
 
@@ -13,7 +14,8 @@ function read(): Stored {
   const raw = window.localStorage.getItem(KEY);
   if (raw) {
     const data = JSON.parse(raw) as Stored;
-    if (data?.version === 1 && Array.isArray(data.members) && data.days) return data;
+    // 負担割合が入っていない古いデータは、読み込み時に「1割」をおぎなう
+    if (data?.version === 1 && Array.isArray(data.members) && data.days) return { ...data, members: data.members.map(normalizeMember) };
   }
   // 初回は架空データを入れる
   const demo = createDemoData();
@@ -76,7 +78,7 @@ export const localRepository: Repository = {
   },
   async importAll(backup) {
     if (!validateBackup(backup)) throw new Error("このアプリのバックアップファイルではありません");
-    write({ version: 1, members: backup.members, days: Object.fromEntries(backup.days.map((d) => [d.date, d])) });
+    write({ version: 1, members: backup.members.map(normalizeMember), days: Object.fromEntries(backup.days.map((d) => [d.date, d])) });
   },
   async resetToDemo() {
     window.localStorage.removeItem(KEY);

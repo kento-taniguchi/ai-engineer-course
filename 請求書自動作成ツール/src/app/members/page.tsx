@@ -1,12 +1,13 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WEEKDAY_LABELS, WEEKDAY_ORDER } from "@/config";
-import { formatDateLong, isDateKey, todayKey } from "@/lib/dates";
+import { COPAY_RATIOS, WEEKDAY_LABELS, WEEKDAY_ORDER } from "@/config";
+import { unitPriceFor, yen } from "@/lib/billing";
+import { formatDateLong, formatMonth, isDateKey, isMonthKey, monthOf, todayKey } from "@/lib/dates";
 import {
-  changeSchedule, compareMembers, createMember, currentWeekdays, isWithdrawnOn, renameMember, restoreMember,
-  upcomingSchedules, withdrawMember,
+  changeCopay, changeSchedule, compareMembers, copayRatioFor, createMember, currentWeekdays, isWithdrawnOn, renameMember,
+  restoreMember, upcomingCopays, upcomingSchedules, withdrawMember,
 } from "@/lib/members";
-import type { Member } from "@/lib/types";
+import type { CopayRatio, Member } from "@/lib/types";
 import { getRepository } from "@/services/repository";
 
 const repo = getRepository();
@@ -87,6 +88,7 @@ export default function MembersPage() {
             <tr>
               <th>氏名</th>
               <th>利用曜日</th>
+              <th>負担割合</th>
               <th>状態</th>
               <th></th>
             </tr>
@@ -106,6 +108,14 @@ export default function MembersPage() {
                     {up.map((s) => (
                       <div key={s.from} className="small muted">
                         {formatDateLong(s.from)}から {wdText(s.weekdays)}
+                      </div>
+                    ))}
+                  </td>
+                  <td>
+                    {copayRatioFor(m, monthOf(today))}割
+                    {upcomingCopays(m, monthOf(today)).map((c) => (
+                      <div key={c.from} className="small muted">
+                        {formatMonth(c.from)}分から {c.ratio}割
                       </div>
                     ))}
                   </td>
@@ -155,14 +165,28 @@ function WeekdayPicker({ value, onChange }: { value: number[]; onChange: (v: num
   );
 }
 
+/** 介護保険の負担割合を選ぶボタン（1回あたりの金額も表示） */
+function RatioPicker({ value, onChange, ym }: { value: CopayRatio; onChange: (v: CopayRatio) => void; ym: string }) {
+  return (
+    <div className="ratio-picker" role="group" aria-label="介護保険の負担割合">
+      {COPAY_RATIOS.map((r) => (
+        <button key={r} type="button" aria-pressed={value === r} onClick={() => onChange(r)}>
+          {r}割<span className="price">1回 {yen(unitPriceFor(ym, r))}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function NewMemberForm({
   onCancel,
   onSave,
 }: {
   onCancel: () => void;
-  onSave: (input: { name: string; kana: string; weekdays: number[]; from: string }) => Promise<void>;
+  onSave: (input: { name: string; kana: string; weekdays: number[]; from: string; copayRatio: CopayRatio }) => Promise<void>;
 }) {
   const [name, setName] = useState("");
+  const [copayRatio, setCopayRatio] = useState<CopayRatio>(1);
   const [kana, setKana] = useState("");
   const [weekdays, setWeekdays] = useState<number[]>([]);
   const [from, setFrom] = useState(todayKey());
@@ -170,7 +194,7 @@ function NewMemberForm({
   const submit = async () => {
     try {
       if (!isDateKey(from)) throw new Error("利用開始日を選んでください");
-      await onSave({ name, kana, weekdays, from });
+      await onSave({ name, kana, weekdays, from, copayRatio });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
@@ -191,6 +215,10 @@ function NewMemberForm({
       <div style={{ marginTop: 12 }}>
         <span className="label">利用曜日</span>
         <WeekdayPicker value={weekdays} onChange={setWeekdays} />
+      </div>
+      <div style={{ marginTop: 12 }}>
+        <span className="label">介護保険の負担割合</span>
+        <RatioPicker value={copayRatio} onChange={setCopayRatio} ym={isDateKey(from) ? monthOf(from) : monthOf(todayKey())} />
       </div>
       <div style={{ marginTop: 12, maxWidth: 240 }}>
         <label className="label" htmlFor="fr">利用開始日</label>
@@ -221,6 +249,9 @@ function EditMember({
   const [weekdays, setWeekdays] = useState<number[]>(currentWeekdays(m, today));
   const [from, setFrom] = useState(today);
   const [withdrawOn, setWithdrawOn] = useState(today);
+  const thisMonth = monthOf(today);
+  const [ratio, setRatio] = useState<CopayRatio>(copayRatioFor(m, thisMonth));
+  const [ratioFrom, setRatioFrom] = useState(thisMonth);
   const [error, setError] = useState("");
   const run = async (fn: () => Promise<void>) => {
     setError("");
@@ -232,6 +263,7 @@ function EditMember({
   };
   const nameChanged = name.trim() !== m.name || kana.trim() !== m.kana;
   const sorted = [...m.schedules].sort((a, b) => a.from.localeCompare(b.from));
+  const copayHistory = [...m.copays].sort((a, b) => a.from.localeCompare(b.from));
 
   return (
     <>
@@ -301,6 +333,44 @@ function EditMember({
             ))}
           </ul>
           <div className="muted">保存済みの出欠記録は、曜日を変更しても書き換わりません。</div>
+        </div>
+      </div>
+
+      <div className="card section">
+        <h2>介護保険の負担割合</h2>
+        <div className="small muted" style={{ marginBottom: 8 }}>
+          今月（{formatMonth(thisMonth)}分）：{copayRatioFor(m, thisMonth)}割（1回 {yen(unitPriceFor(thisMonth, copayRatioFor(m, thisMonth)))}）
+        </div>
+        <RatioPicker value={ratio} onChange={setRatio} ym={isMonthKey(ratioFrom) ? ratioFrom : thisMonth} />
+        <div style={{ marginTop: 12, maxWidth: 240 }}>
+          <label className="label" htmlFor="rfr">何月分から変更</label>
+          <input id="rfr" type="month" className="input" value={ratioFrom} onChange={(e) => setRatioFrom(e.target.value)} />
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <button
+            className="btn btn-primary"
+            onClick={() =>
+              run(async () => {
+                if (!isMonthKey(ratioFrom)) throw new Error("何月分から変更するかを選んでください");
+                const later = m.copays.filter((c) => c.from > ratioFrom);
+                if (later.length && !window.confirm(`${later.map((c) => formatMonth(c.from)).join("、")}分からの変更予定は取り消されます。よろしいですか？`)) return;
+                await onSave(changeCopay(m, ratio, ratioFrom), `${formatMonth(ratioFrom)}分から ${ratio}割 に変更しました`);
+              })
+            }
+          >
+            負担割合を変更する
+          </button>
+        </div>
+        <div className="small" style={{ marginTop: 16 }}>
+          <span className="label">これまでの設定</span>
+          <ul className="history">
+            {copayHistory.map((c) => (
+              <li key={c.from}>
+                {formatMonth(c.from)}分から：{c.ratio}割
+              </li>
+            ))}
+          </ul>
+          <div className="muted">変更した月より前の請求額は変わりません。</div>
         </div>
       </div>
 

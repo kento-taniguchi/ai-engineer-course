@@ -11,6 +11,15 @@ export type ScheduleEntry = {
   weekdays: number[];
 };
 
+/** 介護保険の自己負担割合（1割・2割・3割） */
+export type CopayRatio = 1 | 2 | 3;
+
+/** 負担割合の設定。from の月の分から有効（次の設定が始まるまで） */
+export type CopayEntry = {
+  from: MonthKey;
+  ratio: CopayRatio;
+};
+
 export type Member = {
   /** 内部用の会員ID（同姓同名でも区別するため。例：M0001） */
   id: string;
@@ -19,6 +28,8 @@ export type Member = {
   kana: string;
   /** 利用曜日の履歴（古い順） */
   schedules: ScheduleEntry[];
+  /** 負担割合の履歴（古い順）。過去の月の請求額が変わらないよう、変更は「何月分から」で記録 */
+  copays: CopayEntry[];
   /** 退会日。この日以降は利用予定者に表示しない。null なら利用中 */
   withdrawnOn: DateKey | null;
   createdAt: string;
