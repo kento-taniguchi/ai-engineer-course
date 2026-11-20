@@ -9,6 +9,7 @@ import {
 } from "@/lib/members";
 import type { CopayRatio, Member } from "@/lib/types";
 import { getRepository } from "@/services/repository";
+import { currentSpreadsheetId, spreadsheetUrl } from "@/services/sheetsRepository";
 
 const repo = getRepository();
 const wdText = (w: number[]) => [...w].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map((n) => WEEKDAY_LABELS[n]).join("・");
@@ -435,6 +436,12 @@ function DataTools({ onChanged, onToast }: { onChanged: () => Promise<void>; onT
   return (
     <details className="section">
       <summary className="muted small" style={{ cursor: "pointer" }}>データのバックアップ（{repo.label}に保存中）</summary>
+      {repo.kind === "sheets" && currentSpreadsheetId() && (
+        <p className="small" style={{ margin: "8px 0 0" }}>
+          <a href={spreadsheetUrl(currentSpreadsheetId()!)} target="_blank" rel="noopener noreferrer">データのスプレッドシートを開く</a>
+          <span className="muted">（見るだけにしてください。間違えて変えたときは「ファイル」→「変更履歴」で戻せます）</span>
+        </p>
+      )}
       <div className="row" style={{ marginTop: 8 }}>
         <button className="btn btn-small" onClick={exportData}>書き出し</button>
         <button className="btn btn-small" onClick={() => fileRef.current?.click()}>読み込み</button>
@@ -449,17 +456,19 @@ function DataTools({ onChanged, onToast }: { onChanged: () => Promise<void>; onT
             e.target.value = "";
           }}
         />
-        <button
-          className="btn btn-small btn-danger"
-          onClick={async () => {
-            if (!window.confirm("すべてのデータを消して、架空のデモデータに戻します。よろしいですか？")) return;
-            await repo.resetToDemo();
-            await onChanged();
-            onToast("デモデータに戻しました");
-          }}
-        >
-          デモデータに戻す
-        </button>
+        {repo.kind === "local" && (
+          <button
+            className="btn btn-small btn-danger"
+            onClick={async () => {
+              if (!window.confirm("すべてのデータを消して、架空のデモデータに戻します。よろしいですか？")) return;
+              await repo.resetToDemo();
+              await onChanged();
+              onToast("デモデータに戻しました");
+            }}
+          >
+            デモデータに戻す
+          </button>
+        )}
       </div>
     </details>
   );

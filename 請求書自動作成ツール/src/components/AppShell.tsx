@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { OFFICE } from "@/config";
+import { GoogleGate } from "./GoogleGate";
 import { confirmLeave } from "./unsaved";
 
 const NAV = [
@@ -37,7 +38,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
-      <main className="main">{children}</main>
+      <main className="main">
+        <GoogleGate>{children}</GoogleGate>
+      </main>
     </>
   );
 }

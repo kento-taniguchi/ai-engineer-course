@@ -6,6 +6,7 @@ import { weekdayOf, daysInMonth, addMonths } from "../src/lib/dates";
 import { changeSchedule, createMember, nextMemberId, restoreMember, withdrawMember, isScheduledOn, changeCopay, copayRatioFor, normalizeMember } from "../src/lib/members";
 import { buildAttendanceSheet, toCsv, MARK } from "../src/lib/attendanceSheet";
 import { buildSpreadsheetRequest } from "../src/lib/googleSheets";
+import { a1, buildDataSpreadsheetRequest, daysToRows, infoRows, isAppInfo, membersToRows, planWrite, rowsToDays, rowsToMembers, textToWeekdays } from "../src/lib/sheetsFormat";
 import type { DayRecord, Member } from "../src/lib/types";
 
 let failed = 0;
@@ -196,6 +197,48 @@ ok(reqRowA.values[2 + 15].userEnteredValue?.stringValue === MARK && reqRowA.valu
 const lastRow = rd[rd.length - 1].values;
 ok(lastRow[lastRow.length - 1].userEnteredValue?.numberValue === sNov.totalAmount, "スプレッドシート：合計の金額は数値で入る");
 ok(req.sheets[0].data[0].columnMetadata.length === sheet.header.length, "スプレッドシート：全列の幅を指定");
+
+console.log("\n11. Googleスプレッドシートへの保存（行への変換）");
+{
+  const mr = membersToRows(demo.members);
+  ok(mr["会員"].length === 30 && mr["会員"][0][0] === "M0001", "会員シート：30行、会員ID順");
+  const nishidaRows = mr["利用曜日"].filter((r) => r[1] && r[0] === nishida.id);
+  ok(nishidaRows.length === 2 && nishidaRows[0][2] === "月" && nishidaRows[1][2] === "火,木", "利用曜日シート：西田さんは「月」→「火,木」の2行");
+  const back = rowsToMembers(mr["会員"], mr["利用曜日"], mr["負担割合"]);
+  const norm = (ms: Member[]) => JSON.stringify([...ms].sort((x, y) => x.id.localeCompare(y.id)));
+  ok(norm(back) === norm(demo.members), "会員：行にして戻すと元と同じ（曜日・負担割合・退会日を含む）");
+  const nameOf = (id: string) => demo.members.find((m) => m.id === id)?.name ?? "";
+  const dr = daysToRows(demo.days, nameOf);
+  ok(dr.length === demo.days.reduce((n, d) => n + d.entries.length, 0), `出欠シート：1人1日1行（${dr.length}行）`);
+  ok(dr[0][3] === "利用" || dr[0][3] === "欠席" || dr[0][3] === "未確認", "出欠シート：状態は「利用・欠席・未確認」の文字");
+  const daysBack = rowsToDays(dr);
+  ok(JSON.stringify(daysBack) === JSON.stringify([...demo.days].sort((x, y) => x.date.localeCompare(y.date))), "出欠：行にして戻すと元と同じ（振替の「追加」・未確認を含む）");
+  // 数値で返ってくる値（Google から読むと割合は数値）も読める
+  ok(rowsToMembers([["M0001", "架空", "", "", T, T]], [["M0001", "2026-01-01", "月、水"]], [["M0001", "2026-01", 2]])[0].copays[0].ratio === 2, "割合が数値でも、曜日が「月、水」でも読める");
+  ok(textToWeekdays("月,金") !== null && textToWeekdays("げつ") === null, "曜日の文字の読み取り");
+  let msg = "";
+  try { rowsToDays([["2026-11-02", "M0001", "", "出席", "", T]]); } catch (e) { msg = String(e); }
+  ok(msg.includes("出欠シートの2行目") && msg.includes("出席"), "読めない状態は「出欠シートの2行目」と知らせる");
+  msg = "";
+  try { rowsToMembers([["M0001", "架空", "", "", T, T]], [], []); } catch (e) { msg = String(e); }
+  ok(msg.includes("利用曜日"), "利用曜日がない会員は知らせる");
+  ok(rowsToMembers([["M0001", "架空", "", "", T, T]], [["M0001", "2026-01-01", "月"]], [])[0].copays[0].ratio === 1, "負担割合の行がなければ1割");
+  ok(rowsToDays([["", "", "", "", "", ""], ["2026-11-02", "M0001", "", "利用", "", T]]).length === 1, "空の行は飛ばす");
+
+  // 書き込む範囲
+  const old = [["a", 1], ["b", 2], ["c", 3]];
+  ok(planWrite(old, [["a", "1"], ["b", 2], ["c", 3]]) === null, "変更がなければ書かない（数値と文字の 1 は同じ扱い）");
+  const p1 = planWrite(old, [["a", 1], ["b", 2], ["c", 3], ["d", 4]])!;
+  ok(p1.from === 3 && p1.rows.length === 1 && p1.clearTo <= p1.clearFrom, "末尾に1日分を足すときは、その行だけ書く");
+  const p2 = planWrite(old, [["a", 1], ["X", 2], ["c", 3]])!;
+  ok(p2.from === 1 && p2.rows.length === 2, "途中を直したときは、そこから後ろを書く");
+  const p3 = planWrite(old, [["a", 1]])!;
+  ok(p3.from === 1 && p3.rows.length === 0 && p3.clearFrom === 1 && p3.clearTo === 3, "行が減ったときは、余った行を消す");
+  ok(a1("出欠", 5) === "'出欠'!A5" && a1("出欠", 2, "A", 9, "F") === "'出欠'!A2:F9", "範囲の書き方 '出欠'!A2:F9");
+  const createReq = buildDataSpreadsheetRequest("テスト", T);
+  ok(createReq.sheets.map((x) => x.properties.title).join() === "情報,会員,利用曜日,負担割合,出欠", "新しいスプレッドシート：5つのシート");
+  ok(isAppInfo(infoRows(T)) && !isAppInfo([["アプリ", "ほかのアプリ"]]), "情報シートで、このアプリのデータか確かめる");
+}
 
 console.log(failed ? `\n✗ ${failed}件 失敗` : "\nすべて成功");
 process.exit(failed ? 1 : 0);

@@ -43,6 +43,7 @@ export function validateBackup(data: unknown): data is BackupData {
 
 export const localRepository: Repository = {
   label: "このブラウザ",
+  kind: "local",
   async listMembers() {
     return read().members;
   },

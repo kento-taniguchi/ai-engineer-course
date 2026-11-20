@@ -3,10 +3,13 @@
 // 切り替えるときは、同じ関数を持つ実装を作り、getRepository() で選ぶようにします。
 import type { DateKey, DayRecord, Member, MonthKey } from "@/lib/types";
 import { localRepository } from "./localRepository";
+import { sheetsRepository } from "./sheetsRepository";
 
 export interface Repository {
   /** 保存先の名前（画面の表示用） */
   readonly label: string;
+  /** 保存先の種類（local＝このブラウザ／sheets＝Googleスプレッドシート） */
+  readonly kind: DataBackend;
   listMembers(): Promise<Member[]>;
   /** 会員を1人分保存（新規・更新どちらも） */
   saveMember(member: Member): Promise<void>;
@@ -29,8 +32,11 @@ export type BackupData = {
   days: DayRecord[];
 };
 
+export type DataBackend = "local" | "sheets";
+
+/** 保存先の設定（.env.local の NEXT_PUBLIC_DATA_BACKEND。sheets 以外はこのブラウザ） */
+export const DATA_BACKEND: DataBackend = process.env.NEXT_PUBLIC_DATA_BACKEND === "sheets" ? "sheets" : "local";
+
 export function getRepository(): Repository {
-  // 将来：process.env.NEXT_PUBLIC_DATA_BACKEND === "sheets" のときに
-  // Googleスプレッドシート用の実装（例：sheetsRepository）を返す
-  return localRepository;
+  return DATA_BACKEND === "sheets" ? sheetsRepository : localRepository;
 }
