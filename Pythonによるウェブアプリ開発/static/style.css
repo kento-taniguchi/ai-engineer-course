@@ -1,0 +1,58 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  background: #f5f6f8;
+  color: #222;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+}
+.logo { font-size: 1.2rem; font-weight: bold; color: #222; text-decoration: none; }
+
+.container { max-width: 900px; margin: 24px auto; padding: 0 16px; }
+h1 { font-size: 1.4rem; }
+.count { font-size: 0.9rem; color: #666; font-weight: normal; }
+
+.btn {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: #222;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn:hover { background: #f0f0f0; }
+.btn-primary { background: #2f6fec; border-color: #2f6fec; color: #fff; }
+.btn-primary:hover { background: #1f5bd0; }
+
+.flash { padding: 10px 14px; border-radius: 6px; }
+.flash-success { background: #e6f4ea; color: #1e6b34; }
+.flash-error { background: #fdecea; color: #a12622; }
+
+.todo-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; }
+.todo-table th, .todo-table td { padding: 10px 12px; border-bottom: 1px solid #eee; text-align: left; vertical-align: top; }
+.todo-table th { background: #fafafa; font-size: 0.85rem; color: #555; }
+.todo-table .due { white-space: nowrap; width: 9em; }
+.todo-table .title { font-weight: bold; }
+.todo-table .content { white-space: pre-wrap; color: #444; }
+.overdue .due { color: #c0392b; }
+.badge { display: block; font-size: 0.75rem; color: #fff; background: #c0392b; border-radius: 4px; padding: 1px 6px; width: fit-content; margin-top: 4px; }
+
+.empty { background: #fff; padding: 24px; border-radius: 8px; color: #666; }
+
+.todo-form { background: #fff; padding: 24px; border-radius: 8px; display: grid; gap: 16px; }
+.todo-form label { display: grid; gap: 6px; font-weight: bold; }
+.todo-form input, .todo-form textarea { font: inherit; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-weight: normal; }
+.required { font-size: 0.75rem; color: #fff; background: #c0392b; border-radius: 4px; padding: 1px 6px; margin-left: 4px; }
+.actions { display: flex; justify-content: flex-end; gap: 8px; }

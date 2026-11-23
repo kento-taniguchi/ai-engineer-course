@@ -1,0 +1,46 @@
+# ToDoリストアプリ（Python / Flask + Google スプレッドシート）
+
+## できること
+- やることの **登録**・**編集**（タイトル・内容・期日）
+- 登録したやることの **一覧ページ**（期日が近い順。期限切れは赤で表示）
+- データは Google スプレッドシートの「todos」シートに保存（シートは初回起動時に自動で作られます）
+
+## ファイル構成
+| ファイル | 役割 |
+|---|---|
+| `app.py` | 画面（ページ）の処理。Flask アプリ本体 |
+| `sheets.py` | スプレッドシートへの保存・読み込み |
+| `templates/` | 画面の HTML（一覧・登録/編集フォーム） |
+| `static/style.css` | 見た目 |
+| `.env.example` | 設定ファイルのひな形 |
+
+## 準備（初回だけ）
+
+### 1. Google 側の準備
+1. [Google Cloud コンソール](https://console.cloud.google.com/) でプロジェクトを作る
+2. 「API とサービス」→「ライブラリ」で **Google Sheets API** を有効にする
+3. 「API とサービス」→「認証情報」→「認証情報を作成」→ **サービスアカウント** を作る
+4. 作ったサービスアカウントの「鍵」タブ →「鍵を追加」→ **JSON** → ダウンロードしたファイルを
+   このフォルダに `credentials.json` という名前で置く
+5. 新しい Google スプレッドシートを作り、「共有」から サービスアカウントのメールアドレス
+   （`xxxx@xxxx.iam.gserviceaccount.com`）を **編集者** として追加する
+
+### 2. 設定ファイル
+`.env.example` をコピーして `.env` にし、`SPREADSHEET_ID` を書き換えます。
+スプレッドシートの URL `https://docs.google.com/spreadsheets/d/【ここ】/edit` の部分が ID です。
+
+### 3. ライブラリのインストール
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## 起動
+```powershell
+.venv\Scripts\activate
+python app.py
+```
+ブラウザで http://127.0.0.1:5000 を開きます。
+
+> `credentials.json` と `.env` は秘密の情報です。`.gitignore` で GitHub に上がらないようにしてあります。

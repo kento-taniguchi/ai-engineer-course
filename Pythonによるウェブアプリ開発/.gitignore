@@ -1,0 +1,7 @@
+# 仮想環境
+.venv/
+__pycache__/
+
+# 秘密の情報（絶対に GitHub に上げない）
+.env
+credentials.json
