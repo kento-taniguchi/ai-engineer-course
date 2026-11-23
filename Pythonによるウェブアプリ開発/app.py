@@ -9,7 +9,7 @@ from datetime import date
 from dotenv import load_dotenv
 from flask import Flask, abort, flash, redirect, render_template, request, url_for
 
-from sheets import TodoSheet
+from sheets import SheetError, TodoSheet
 
 load_dotenv()
 
@@ -52,6 +52,15 @@ def validate(form) -> tuple[dict, list[str]]:
     return data, errors
 
 
+CONNECTION_ERROR = "スプレッドシートとの通信に失敗しました。少し待ってから、もう一度お試しください。"
+
+
+@app.errorhandler(SheetError)
+def handle_sheet_error(error):
+    """一覧などの表示中に通信に失敗したとき、エラー画面の代わりにお知らせを出す。"""
+    return render_template("error.html", message=CONNECTION_ERROR), 503
+
+
 @app.route("/")
 def index():
     todos = get_sheet().list_todos()
@@ -66,7 +75,11 @@ def new_todo():
             for e in errors:
                 flash(e, "error")
             return render_template("form.html", todo=data, mode="new"), 400
-        get_sheet().add_todo(**data)
+        try:
+            get_sheet().add_todo(**data)
+        except SheetError:
+            flash(CONNECTION_ERROR, "error")
+            return render_template("form.html", todo=data, mode="new"), 503
         flash(f"「{data['title']}」を登録しました。", "success")
         return redirect(url_for("index"))
     return render_template("form.html", todo={}, mode="new")
@@ -74,19 +87,23 @@ def new_todo():
 
 @app.route("/todos/<todo_id>/edit", methods=["GET", "POST"])
 def edit_todo(todo_id):
-    sheet = get_sheet()
     if request.method == "POST":
         data, errors = validate(request.form)
         if errors:
             for e in errors:
                 flash(e, "error")
             return render_template("form.html", todo={**data, "id": todo_id}, mode="edit"), 400
-        if not sheet.update_todo(todo_id, **data):
+        try:
+            updated = get_sheet().update_todo(todo_id, **data)
+        except SheetError:
+            flash(CONNECTION_ERROR, "error")
+            return render_template("form.html", todo={**data, "id": todo_id}, mode="edit"), 503
+        if not updated:
             abort(404)
         flash(f"「{data['title']}」を更新しました。", "success")
         return redirect(url_for("index"))
 
-    todo = sheet.get_todo(todo_id)
+    todo = get_sheet().get_todo(todo_id)
     if todo is None:
         abort(404)
     return render_template("form.html", todo=todo, mode="edit")

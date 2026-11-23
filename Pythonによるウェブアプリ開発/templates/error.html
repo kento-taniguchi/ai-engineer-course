@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p class="flash flash-error">{{ message }}</p>
+<p><a class="btn" href="{{ request.url }}">もう一度読み込む</a></p>
+{% endblock %}
