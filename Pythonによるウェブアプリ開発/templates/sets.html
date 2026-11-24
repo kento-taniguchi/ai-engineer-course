@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}業務セット | ToDoリスト{% endblock %}
+
+{% block content %}
+<h1>業務セット <span class="count">{{ sets|length }}件</span></h1>
+<p class="hint">
+  コアの ToDo を登録するときに業務セットを選ぶと、セットの業務も ToDo として自動で登録されます。
+</p>
+
+<p><a class="btn btn-primary" href="{{ url_for('new_set') }}">＋ 業務セットを作る</a></p>
+
+{% if sets %}
+  {% for s in sets %}
+    <section class="set-card">
+      <div class="set-card-head">
+        <h2>{{ s.name }}</h2>
+        <a class="btn" href="{{ url_for('edit_set', set_id=s.id) }}">編集</a>
+      </div>
+      <ul class="set-tasks">
+        {% for t in s.tasks %}
+          <li>{{ t.title }} <span class="offset">期日の{{ t.offset|offset_label }}</span></li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endfor %}
+{% else %}
+  <p class="empty">まだ業務セットがありません。「＋ 業務セットを作る」から追加しましょう。</p>
+{% endif %}
+{% endblock %}

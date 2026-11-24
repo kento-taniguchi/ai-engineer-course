@@ -3,31 +3,38 @@
 {% block content %}
 <h1>やること一覧 <span class="count">{{ todos|length }}件</span></h1>
 
-{% if todos %}
-  <table class="todo-table">
-    <thead>
-      <tr>
-        <th>期日</th>
-        <th>タイトル</th>
-        <th>内容</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for todo in todos %}
-        {% set overdue = todo.due_date and todo.due_date < today %}
-        <tr class="{{ 'overdue' if overdue }}">
-          <td class="due">
-            {{ todo.due_date or '―' }}
-            {% if overdue %}<span class="badge">期限切れ</span>{% endif %}
-          </td>
-          <td class="title">{{ todo.title }}</td>
-          <td class="content">{{ todo.content }}</td>
-          <td><a class="btn" href="{{ url_for('edit_todo', todo_id=todo.id) }}">編集</a></td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+{% if groups %}
+  {% for group in groups %}
+    {# この期日が、今日より前か・今日か #}
+    {% set overdue = group.due_date and group.due_date < today %}
+    {% set is_today = group.due_date == today %}
+
+    <section class="day-group {{ 'overdue' if overdue }} {{ 'today' if is_today }}">
+      <h2 class="day-head">
+        {{ group.label }}
+        {% if overdue %}<span class="badge">期限切れ</span>{% endif %}
+        {% if is_today %}<span class="badge badge-today">今日</span>{% endif %}
+        <span class="count">{{ group.todos|length }}件</span>
+      </h2>
+
+      <table class="todo-table">
+        <tbody>
+          {% for todo in group.todos %}
+            <tr>
+              <td class="title">
+                {{ todo.title }}
+                {% if todo.parent_id %}
+                  <span class="parent">「{{ titles.get(todo.parent_id, '削除されたやること') }}」の付随業務</span>
+                {% endif %}
+              </td>
+              <td class="content">{{ todo.content }}</td>
+              <td class="edit"><a class="btn" href="{{ url_for('edit_todo', todo_id=todo.id) }}">編集</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% endfor %}
 {% else %}
   <p class="empty">まだやることが登録されていません。「＋ 新しく登録」から追加しましょう。</p>
 {% endif %}

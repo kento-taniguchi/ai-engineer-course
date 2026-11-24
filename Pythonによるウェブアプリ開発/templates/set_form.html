@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}業務セット{{ 'の編集' if mode == 'edit' else 'を作る' }} | ToDoリスト{% endblock %}
+
+{% block content %}
+<h1>業務セット{{ 'を編集' if mode == 'edit' else 'を作る' }}</h1>
+
+<form class="todo-form" method="post"
+      action="{{ url_for('edit_set', set_id=task_set.id) if mode == 'edit' else url_for('new_set') }}">
+  <label>
+    セット名 <span class="required">必須</span>
+    <input type="text" name="name" maxlength="50" required placeholder="例：新規入会"
+           value="{{ task_set.name or '' }}">
+  </label>
+
+  <div>
+    <p class="field-title">付随する業務 <span class="required">1つ以上</span></p>
+    <p class="hint">
+      「期日のずれ」は、コアの ToDo の期日から何日ずらすかです。
+      マイナスは前（-3 ＝ 3日前）、0 は当日、プラスは後（7 ＝ 7日後）。
+      タイトルが空の行は使われません。
+    </p>
+    <table class="task-input">
+      <thead>
+        <tr><th>#</th><th>業務タイトル</th><th>業務内容</th><th>期日のずれ(日)</th></tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+          <tr>
+            <td class="num">{{ loop.index }}</td>
+            <td><input type="text" name="task_title" maxlength="100" value="{{ r.title }}"></td>
+            <td><input type="text" name="task_content" maxlength="1000" value="{{ r.content }}"></td>
+            <td><input type="number" name="task_offset" min="-365" max="365" step="1"
+                       placeholder="0" value="{{ r.offset if r.title else '' }}"></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="actions">
+    <a class="btn" href="{{ url_for('list_sets') }}">キャンセル</a>
+    <button class="btn btn-primary" type="submit">{{ '更新する' if mode == 'edit' else '登録する' }}</button>
+  </div>
+</form>
+
+{% if mode == 'edit' %}
+  <form class="delete-form" method="post" action="{{ url_for('delete_set', set_id=task_set.id) }}"
+        onsubmit="return confirm('この業務セットを削除しますか？（すでに作られた ToDo は残ります）');">
+    <button class="btn btn-danger" type="submit">この業務セットを削除</button>
+  </form>
+{% endif %}
+{% endblock %}

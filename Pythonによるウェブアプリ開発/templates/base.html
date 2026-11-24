@@ -9,7 +9,10 @@
 <body>
   <header class="header">
     <a class="logo" href="{{ url_for('index') }}">ToDoリスト</a>
-    <a class="btn btn-primary" href="{{ url_for('new_todo') }}">＋ 新しく登録</a>
+    <nav class="nav">
+      <a class="btn" href="{{ url_for('list_sets') }}">業務セット</a>
+      <a class="btn btn-primary" href="{{ url_for('new_todo') }}">＋ 新しく登録</a>
+    </nav>
   </header>
 
   <main class="container">
