@@ -5,3 +5,6 @@ __pycache__/
 # 秘密の情報（絶対に GitHub に上げない）
 .env
 credentials.json
+
+# 毎朝のLINE通知の記録
+notify_line.log

@@ -51,3 +51,13 @@ python app.py
 ブラウザで http://127.0.0.1:5000 を開きます。
 
 > `credentials.json` と `.env` は秘密の情報です。`.gitignore` で GitHub に上がらないようにしてあります。
+
+## 毎朝の LINE 通知
+
+期日が今日の ToDo を、毎朝 7 時（日本時間）に LINE 公式アカウントから自分に送ります。
+GitHub Actions（GitHub のコンピューター）で動くので、自分の PC の電源が入っていなくても届きます。
+
+- 送信プログラム：`notify_line.py`（`python notify_line.py --dry-run` で、送らずに文面だけ確認できます）
+- 自動実行の設定：リポジトリ直下の `.github/workflows/todo-line-notify.yml`
+- 合鍵は GitHub の Secrets に登録します：`SPREADSHEET_ID` / `GOOGLE_CREDENTIALS_JSON`（credentials.json の中身）/ `LINE_CHANNEL_ACCESS_TOKEN` / `LINE_USER_ID`（省略可。省略すると公式アカウントの友だち全員に送ります）
+- GitHub の「Actions」タブ →「ToDo LINE通知」→「Run workflow」で、手動でも送れます
