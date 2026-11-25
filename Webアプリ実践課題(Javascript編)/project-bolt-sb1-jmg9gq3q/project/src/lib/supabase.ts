@@ -25,17 +25,36 @@ export interface Todo {
   parent_id: string | null;
   /** コアの実施日時から見た時刻の決め方 */
   timing: ItemTiming | null;
+  /** 定期タスクから作られた場合、そのルールのID */
+  recurrence_id: string | null;
+  /** 定期タスクの何日の分か（YYYY-MM-DD） */
+  occurs_on: string | null;
+  /** 分類（事業）。空文字は未分類 */
+  category: string;
+  /** 単価（円）。null は単価なし */
+  price: number | null;
   created_at: string;
 }
 
 export type TodoPatch = Partial<
   Pick<
     Todo,
-    'title' | 'notes' | 'completed' | 'priority' | 'due_at' | 'scheduled_at' | 'duration_minutes' | 'set_name' | 'parent_id' | 'timing'
+    | 'title'
+    | 'notes'
+    | 'completed'
+    | 'priority'
+    | 'due_at'
+    | 'scheduled_at'
+    | 'duration_minutes'
+    | 'set_name'
+    | 'parent_id'
+    | 'timing'
+    | 'category'
+    | 'price'
   >
 >;
 
-export type NewTodo = TodoPatch & { title: string };
+export type NewTodo = TodoPatch & { title: string; recurrence_id?: string | null; occurs_on?: string | null };
 
 /**
  * サブタスクの時刻の決め方
@@ -54,13 +73,50 @@ export interface TemplateItem {
   priority: Priority;
   duration_minutes: number;
   timing: ItemTiming;
+  /** 単価（円）。セットではコアタスク（1行目）に付ける */
+  price?: number | null;
 }
 
 export interface TaskTemplate {
   id: string;
   name: string;
-  /** 分類（例：野球事業）。空文字は未分類 */
+  /** 分類。空文字は未分類 */
   category: string;
   items: TemplateItem[];
   created_at: string;
 }
+
+/**
+ * 繰り返し方
+ * - daily   … interval 日ごと（1 = 毎日）
+ * - weekly  … weekdays の曜日（0=日〜6=土）を interval 週ごと（1 = 毎週）
+ * - monthly … 毎月 day 日（0 = 末日）
+ */
+export type RecurrenceRule =
+  | { kind: 'daily'; interval: number }
+  | { kind: 'weekly'; weekdays: number[]; interval: number }
+  | { kind: 'monthly'; day: number };
+
+export interface RecurringTask {
+  id: string;
+  title: string;
+  notes: string;
+  priority: Priority;
+  duration_minutes: number;
+  /** 実施時刻 "HH:mm"。null は時間指定なし */
+  time: string | null;
+  rule: RecurrenceRule;
+  /** YYYY-MM-DD */
+  start_date: string;
+  active: boolean;
+  /** この日の分までタスクを作った（YYYY-MM-DD） */
+  generated_until: string | null;
+  /** 分類（事業）。空文字は未分類 */
+  category: string;
+  /** 単価（円）。null は単価なし */
+  price: number | null;
+  created_at: string;
+}
+
+export type RecurringDraft = Pick<RecurringTask, 'title' | 'notes' | 'priority' | 'duration_minutes' | 'time' | 'rule' | 'start_date'> &
+  Partial<Pick<RecurringTask, 'category' | 'price'>>;

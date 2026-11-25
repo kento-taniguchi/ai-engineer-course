@@ -1,0 +1,52 @@
+# ToDo アプリ（React＋Supabase）の予定と売上を LINE に送る
+#   毎朝 7:00  … 今日のタスク
+#   毎晩 22:00 … 本日の売上（日曜は今週の売上、月末は今月の売上も一緒に）
+# GitHub のコンピューターで動くので、自分の PC の電源が入っていなくても送られます。
+#
+# 必要な Secrets（GitHub のリポジトリの Settings → Secrets and variables → Actions）:
+#   TODO_SUPABASE_URL         … Supabase の URL（.env の VITE_SUPABASE_URL）
+#   TODO_SUPABASE_ANON_KEY    … Supabase の公開用の鍵（.env の VITE_SUPABASE_ANON_KEY）
+#   LINE_CHANNEL_ACCESS_TOKEN … LINE 公式アカウントの合鍵（Python の ToDo アプリと共通）
+#   LINE_USER_ID              … （省略可）送り先のユーザーID。無ければ友だち全員に送る
+
+name: ToDoアプリ 予定と売上のLINE通知
+
+on:
+  schedule:
+    # GitHub の時刻は世界標準時（UTC）。日本時間より9時間遅い
+    # ※ GitHub が混んでいると、数分〜数十分遅れることがあります
+    - cron: "0 22 * * *" # 日本時間の朝 7:00
+    - cron: "0 13 * * *" # 日本時間の夜 22:00
+  workflow_dispatch: # GitHub の画面から手動でも動かせるようにする
+    inputs:
+      mode:
+        description: "送る内容（morning=今日のタスク / evening=夜の報告 / daily・weekly・monthly=その報告だけ）"
+        type: choice
+        default: morning
+        options: [morning, evening, daily, weekly, monthly]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: Webアプリ実践課題(Javascript編)/project-bolt-sb1-jmg9gq3q/project
+    env:
+      TZ: Asia/Tokyo # 「今日」「日曜」「月末」を日本の日付で判断するため
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: LINE に送る
+        env:
+          SUPABASE_URL: ${{ secrets.TODO_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.TODO_SUPABASE_ANON_KEY }}
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          # 朝の予定（22:00 UTC）なら morning、夜の予定なら evening、手動なら選んだもの
+          MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || (github.event.schedule == '0 22 * * *' && 'morning' || 'evening') }}
+        run: node scripts/line-report.mjs "$MODE"

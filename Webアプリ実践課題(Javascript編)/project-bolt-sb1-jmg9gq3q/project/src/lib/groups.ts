@@ -10,11 +10,12 @@ export interface TaskGroup {
   children: Todo[];
 }
 
-export type BucketKey = 'overdue' | 'past' | 'today' | 'tomorrow' | 'week' | 'later' | 'none';
+export type BucketKey = 'overdue' | 'past' | 'today' | 'deadline' | 'tomorrow' | 'week' | 'later' | 'none';
 
 export const BUCKETS: { key: BucketKey; label: string }[] = [
   { key: 'overdue', label: '' }, // 期限切れ：文字ではなく赤で示す
   { key: 'today', label: '今日' },
+  { key: 'deadline', label: '期限までに' }, // 実施日時を決めず、期限までのどこかで終えればよいもの
   { key: 'tomorrow', label: '明日' },
   { key: 'week', label: '今週' },
   { key: 'later', label: '来週以降' },
@@ -22,8 +23,8 @@ export const BUCKETS: { key: BucketKey; label: string }[] = [
   { key: 'past', label: '過去' },
 ];
 
-/** 最初に開いておくまとまり */
-export const DEFAULT_OPEN: BucketKey[] = ['overdue', 'today', 'tomorrow'];
+/** 最初は閉じておくまとまり（ここにないもの・後から増えたものは開いた状態で出る） */
+export const DEFAULT_CLOSED: BucketKey[] = ['week', 'later', 'none', 'past'];
 
 const whenOf = (t: Todo) => t.scheduled_at ?? t.due_at;
 const time = (iso: string | null) => (iso ? Date.parse(iso) : Number.POSITIVE_INFINITY);
@@ -38,8 +39,19 @@ function groupDate(g: TaskGroup) {
   return times.length ? Math.min(...times) : null;
 }
 
+/**
+ * 期限までのどこかで終えればよいまとまり：未完了のものに実施日時がなく、期限だけがある。
+ * 定期タスクで作った分は、その日のタスクなので含めない。
+ */
+function isAnytimeUntilDue(g: TaskGroup) {
+  const open = members(g).filter((t) => !t.completed);
+  return open.length > 0 && open.every((t) => !t.scheduled_at && !t.recurrence_id) && open.some((t) => t.due_at);
+}
+
 export function bucketOf(g: TaskGroup, now: Date): BucketKey {
   if (members(g).some((t) => isOverdue(t, now))) return 'overdue';
+  // 期限の日まで、毎日目に入るように「期限までに」に入れる
+  if (isAnytimeUntilDue(g)) return 'deadline';
   const d = groupDate(g);
   if (d === null) return 'none';
   const today = startOfDay(now).getTime();

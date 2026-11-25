@@ -1,8 +1,9 @@
 import type { ItemTiming, NewTodo, Priority, TaskTemplate, TemplateItem, Todo } from '@/lib/supabase';
 import { addDays, isSameDay, startOfDay } from '@/lib/date';
+import { fillCustomer } from '@/lib/customer';
 
 export const PRIORITIES: { value: Priority; label: string; badge: string; stripe: string }[] = [
-  { value: 1, label: '高', badge: 'bg-accent text-white', stripe: 'bg-accent' },
+  { value: 1, label: '高', badge: 'bg-accent text-navy-900', stripe: 'bg-accent' },
   { value: 2, label: '中', badge: 'bg-navy-100 text-navy', stripe: 'bg-navy-300' },
   { value: 3, label: '低', badge: 'bg-slate-100 text-slate-500', stripe: 'bg-slate-300' },
 ];
@@ -72,6 +73,7 @@ export function normalizeItem(raw: RawItem): TemplateItem {
     priority: raw.priority ?? 2,
     duration_minutes: raw.duration_minutes || 60,
     timing,
+    price: typeof raw.price === 'number' && raw.price > 0 ? raw.price : null,
   };
 }
 
@@ -81,16 +83,24 @@ export const isSet = (t: TaskTemplate) => t.items.length > 1;
  * テンプレート（またはセット）から登録用のタスクを作る。
  * base はコアタスクの実施日時。null ならカレンダーに入れない（1件だけのテンプレート用）。
  * 時刻が決まるタスクは、その時刻でカレンダーに入り、同じ時刻が期限になる。
+ * customer を渡すと、文中の {お客さん} をその名前に置き換える。分類はテンプレートの分類を引き継ぐ。
  */
-export function buildFromTemplate(t: TaskTemplate, base: Date | null): { core: NewTodo; subs: NewTodo[] } {
+export function buildFromTemplate(t: TaskTemplate, base: Date | null, customer = ''): { core: NewTodo; subs: NewTodo[] } {
   const [coreItem, ...subItems] = t.items;
-  const set_name = isSet(t) ? t.name : null;
+  const set_name = isSet(t) ? fillCustomer(t.name, customer) : null;
+  const category = t.category.trim();
   const duration = coreItem.duration_minutes || 60;
 
+  // 分類は付いているときだけ送る（未分類は送らない）
+  const withCategory = category ? { category } : {};
+
   const core: NewTodo = {
-    title: coreItem.title,
+    title: fillCustomer(coreItem.title, customer),
+    ...withCategory,
     priority: coreItem.priority,
     duration_minutes: duration,
+    // 単価は付いているときだけ送る
+    ...(coreItem.price ? { price: coreItem.price } : {}),
     set_name,
     scheduled_at: base ? base.toISOString() : null,
     // コアは終了時刻を期限にする
@@ -100,9 +110,11 @@ export function buildFromTemplate(t: TaskTemplate, base: Date | null): { core: N
   const subs: NewTodo[] = subItems.map((it) => {
     const at = base ? computeTiming(it.timing, base) : null;
     return {
-      title: it.title,
+      title: fillCustomer(it.title, customer),
+      ...withCategory,
       priority: it.priority,
       duration_minutes: it.duration_minutes || 30,
+      ...(it.price ? { price: it.price } : {}),
       set_name,
       timing: it.timing,
       scheduled_at: at ? at.toISOString() : null,

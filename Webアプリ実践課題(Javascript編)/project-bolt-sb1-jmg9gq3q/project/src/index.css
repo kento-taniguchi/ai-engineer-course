@@ -10,4 +10,30 @@
   body {
     @apply bg-canvas text-slate-700 antialiased;
   }
+  /* 見出しは日本語の字間を詰めて締まった印象に */
+  h1,
+  h2,
+  h3 {
+    font-feature-settings: 'palt';
+  }
+  /* キーボードで操作したときだけ、選んでいる場所に紺の枠を出す */
+  :focus-visible {
+    outline: 2px solid theme('colors.navy.DEFAULT');
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: theme('colors.navy.100');
+  }
+}
+
+/* 「動きを減らす」設定の人には動きを止める */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

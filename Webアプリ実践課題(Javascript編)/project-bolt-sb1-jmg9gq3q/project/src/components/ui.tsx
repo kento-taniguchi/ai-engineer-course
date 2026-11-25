@@ -24,19 +24,20 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-navy-900/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex animate-overlay-in items-end justify-center bg-navy-900/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-4"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
         role="dialog"
         aria-modal="true"
-        className={`flex max-h-[92vh] w-full flex-col rounded-t-2xl border border-navy-100 bg-white shadow-2xl sm:rounded-2xl ${
+        aria-labelledby="modal-title"
+        className={`flex max-h-[92vh] w-full animate-dialog-in flex-col rounded-t-2xl border border-navy-100 bg-white shadow-2xl sm:rounded-2xl ${
           wide ? 'sm:max-w-2xl' : 'sm:max-w-lg'
         }`}
       >
         <div className="flex items-center justify-between border-b border-navy-100 px-5 py-4">
-          <h2 className="text-lg font-bold text-navy">{title}</h2>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100" aria-label="閉じる">
+          <h2 id="modal-title" className="text-lg font-bold text-navy">{title}</h2>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-navy" aria-label="閉じる">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -58,7 +59,7 @@ export function PriorityPicker({ value, onChange }: { value: Priority; onChange:
           aria-checked={value === p.value}
           onClick={() => onChange(p.value)}
           className={`rounded-md px-2.5 py-1 text-xs font-bold transition ${
-            value === p.value ? p.badge : 'text-slate-400 hover:bg-slate-50'
+            value === p.value ? p.badge : 'text-slate-500 hover:bg-slate-50'
           }`}
         >
           {p.label}
@@ -81,7 +82,36 @@ export const inputClass =
   'w-full rounded-lg border border-navy-100 bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-navy focus:outline-none focus:ring-2 focus:ring-navy/15';
 
 export const primaryButton =
-  'inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-bold text-white shadow-sm shadow-accent/30 transition hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-40';
+  'inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-bold text-navy-900 transition hover:bg-accent-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40';
 
 export const ghostButton =
-  'inline-flex items-center justify-center gap-1.5 rounded-lg border border-navy-100 bg-white px-3 py-2 text-sm font-medium text-navy transition hover:bg-navy-50';
+  'inline-flex items-center justify-center gap-1.5 rounded-lg border border-navy-100 bg-white px-3 py-2 text-sm font-medium text-navy transition hover:border-navy-200 hover:bg-navy-50 active:scale-[0.98]';
+
+/** 単価の入力欄（円）。空欄は単価なし */
+export function PriceInput({
+  value,
+  onChange,
+  compact = false,
+  label = '単価',
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  compact?: boolean;
+  label?: string;
+}) {
+  return (
+    <div className="relative">
+      <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-navy-400" aria-hidden>
+        ¥
+      </span>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        inputMode="numeric"
+        aria-label={label}
+        maxLength={10}
+        className={`${inputClass} pl-6 tabular-nums ${compact ? 'py-1.5 text-xs' : ''}`}
+      />
+    </div>
+  );
+}

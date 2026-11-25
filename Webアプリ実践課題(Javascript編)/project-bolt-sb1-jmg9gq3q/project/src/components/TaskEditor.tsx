@@ -2,17 +2,20 @@ import { useState } from 'react';
 import { BookmarkPlus, Trash2 } from 'lucide-react';
 import type { Priority, Todo, TodoPatch } from '@/lib/supabase';
 import { DURATION_OPTIONS, formatDuration, fromInputValue, toInputValue } from '@/lib/date';
-import { Field, Modal, PriorityPicker, ghostButton, inputClass, primaryButton } from '@/components/ui';
+import { Field, Modal, PriceInput, PriorityPicker, ghostButton, inputClass, primaryButton } from '@/components/ui';
+import { parsePrice, priceText } from '@/lib/sales';
+import { CategorySelect } from '@/components/CategorySelect';
 
 interface Props {
   todo: Todo;
+  categories: string[];
   onSave: (patch: TodoPatch) => void;
   onDelete: () => void;
   onSaveAsTemplate: () => void;
   onClose: () => void;
 }
 
-export function TaskEditor({ todo, onSave, onDelete, onSaveAsTemplate, onClose }: Props) {
+export function TaskEditor({ todo, categories, onSave, onDelete, onSaveAsTemplate, onClose }: Props) {
   const [title, setTitle] = useState(todo.title);
   const [notes, setNotes] = useState(todo.notes ?? '');
   const [priority, setPriority] = useState<Priority>(todo.priority);
@@ -20,6 +23,8 @@ export function TaskEditor({ todo, onSave, onDelete, onSaveAsTemplate, onClose }
   const [scheduled, setScheduled] = useState(toInputValue(todo.scheduled_at));
   const [duration, setDuration] = useState(todo.duration_minutes);
   const [completed, setCompleted] = useState(todo.completed);
+  const [category, setCategory] = useState(todo.category ?? '');
+  const [price, setPrice] = useState(priceText(todo.price));
 
   const durations = DURATION_OPTIONS.includes(duration) ? DURATION_OPTIONS : [...DURATION_OPTIONS, duration].sort((a, b) => a - b);
 
@@ -34,6 +39,10 @@ export function TaskEditor({ todo, onSave, onDelete, onSaveAsTemplate, onClose }
       scheduled_at: fromInputValue(scheduled),
       duration_minutes: duration,
       completed,
+      // 分類は変えたときだけ送る
+      ...(category.trim() !== (todo.category ?? '') ? { category: category.trim() } : {}),
+      // 単価も変えたときだけ送る
+      ...(parsePrice(price) !== (todo.price ?? null) ? { price: parsePrice(price) } : {}),
     });
   };
 
@@ -43,7 +52,7 @@ export function TaskEditor({ todo, onSave, onDelete, onSaveAsTemplate, onClose }
       onClose={onClose}
       footer={
         <>
-          <button onClick={onDelete} className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-500" aria-label="削除" title="削除">
+          <button onClick={onDelete} className="rounded-lg p-2 text-slate-500 hover:bg-red-50 hover:text-red-500" aria-label="削除" title="削除">
             <Trash2 className="h-4 w-4" />
           </button>
           <button onClick={onSaveAsTemplate} className={`${ghostButton} px-2.5`} title="テンプレートに保存">
@@ -79,6 +88,15 @@ export function TaskEditor({ todo, onSave, onDelete, onSaveAsTemplate, onClose }
             <input type="checkbox" checked={completed} onChange={(e) => setCompleted(e.target.checked)} className="h-4 w-4 accent-[#1E3A8A]" />
             完了
           </label>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-[1fr_9rem]">
+          <Field label="分類">
+            <CategorySelect value={category} categories={categories} onChange={setCategory} />
+          </Field>
+          <Field label="単価（売上）">
+            <PriceInput value={price} onChange={setPrice} />
+          </Field>
         </div>
 
         <Field label="期限">
@@ -118,7 +136,7 @@ export function TaskEditor({ todo, onSave, onDelete, onSaveAsTemplate, onClose }
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className={inputClass} />
         </Field>
 
-        {todo.set_name && <p className="text-xs text-slate-400">セット「{todo.set_name}」から登録</p>}
+        {todo.set_name && <p className="text-xs text-slate-500">セット「{todo.set_name}」から登録</p>}
         <button type="submit" className="hidden" />
       </form>
     </Modal>

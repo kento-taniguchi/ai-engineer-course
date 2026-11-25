@@ -1,14 +1,13 @@
 import { useMemo, useState } from 'react';
-import { AlertCircle, ChevronRight, ChevronsDownUp, ChevronsUpDown, FileText, Flag, Layers, Loader2, Plus, Settings2 } from 'lucide-react';
-import type { NewTodo, Priority, TaskTemplate, Todo } from '@/lib/supabase';
-import { fromInputValue } from '@/lib/date';
+import { AlertCircle, ChevronRight, ChevronsDownUp, ChevronsUpDown, FileText, LayoutList, Layers, List, Loader2, Repeat, Settings2 } from 'lucide-react';
+import type { TaskTemplate, Todo } from '@/lib/supabase';
 import { isOverdue } from '@/lib/tasks';
-import { BUCKETS, DEFAULT_OPEN, bucketOf, buildGroups, sortGroups, type BucketKey, type ListFilter } from '@/lib/groups';
+import { BUCKETS, DEFAULT_CLOSED, bucketOf, buildGroups, sortGroups, type BucketKey, type ListFilter } from '@/lib/groups';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { PriorityPicker, inputClass, primaryButton } from '@/components/ui';
 import { TaskItem } from '@/components/TaskItem';
 import { CategoryTabs } from '@/components/CategoryTabs';
 import { filterByCategory } from '@/lib/category';
+import type { CategoryColor } from '@/lib/colors';
 
 interface Props {
   todos: Todo[];
@@ -16,10 +15,12 @@ interface Props {
   now: Date;
   templates: TaskTemplate[];
   categories: string[];
+  colorOf: (category: string) => CategoryColor;
   pickedId: string | null;
-  onAdd: (item: NewTodo) => Promise<boolean>;
   onApplyTemplate: (t: TaskTemplate) => void;
   onManageTemplates: () => void;
+  recurringCount: number;
+  onManageRecurring: () => void;
   onToggle: (t: Todo) => void;
   onEdit: (id: string) => void;
   onPick: (id: string) => void;
@@ -28,14 +29,14 @@ interface Props {
 
 export function TaskPanel(props: Props) {
   const { todos, loading, now, templates, categories, pickedId } = props;
-  const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState<Priority>(2);
-  const [due, setDue] = useState('');
-  const [adding, setAdding] = useState(false);
   const [filter, setFilter] = useState<ListFilter>('active');
 
   // 開け閉めの状態はブラウザに覚えておく
-  const [openBuckets, setOpenBuckets] = useLocalStorage<BucketKey[]>('todo.openBuckets', DEFAULT_OPEN);
+  // 閉じているまとまりを覚える（新しく増えたまとまりは開いた状態で出る）
+  const [closedBuckets, setClosedBuckets] = useLocalStorage<BucketKey[]>('todo.closedBuckets', DEFAULT_CLOSED);
+  // 表示の大きさ：compact = 1行で多く見る / detail = 期限などを2行で詳しく
+  const [density, setDensity] = useLocalStorage<'compact' | 'detail'>('todo.density', 'compact');
+  const compact = density === 'compact';
   const [expanded, setExpanded] = useLocalStorage<string[]>('todo.expandedGroups', []);
   const [templatesOpen, setTemplatesOpen] = useLocalStorage('todo.templatesOpen', true);
   const [category, setCategory] = useLocalStorage<string>('todo.templateCategory', '');
@@ -58,23 +59,10 @@ export function TaskPanel(props: Props) {
   const visibleTemplates = filterByCategory(templates, categories, category);
 
   const toggleBucket = (key: BucketKey) =>
-    setOpenBuckets((cur) => (cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key]));
+    setClosedBuckets((cur) => (cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key]));
   const toggleGroup = (id: string) => setExpanded((cur) => (cur.includes(id) ? cur.filter((k) => k !== id) : [...cur, id]));
-  const allOpen = sections.length > 0 && sections.every((s) => openBuckets.includes(s.key));
+  const allOpen = sections.length > 0 && sections.every((s) => !closedBuckets.includes(s.key));
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const t = title.trim();
-    if (!t || adding) return;
-    setAdding(true);
-    const ok = await props.onAdd({ title: t, priority, due_at: fromInputValue(due) });
-    if (ok) {
-      setTitle('');
-      setDue('');
-      setPriority(2);
-    }
-    setAdding(false);
-  };
 
   const renderItem = (t: Todo, extra: Partial<React.ComponentProps<typeof TaskItem>> = {}) => (
     <TaskItem
@@ -82,48 +70,22 @@ export function TaskPanel(props: Props) {
       todo={t}
       now={now}
       picked={pickedId === t.id}
+      categoryColor={t.category ? props.colorOf(t.category) : null}
       parentTitle={t.parent_id ? titles.get(t.parent_id) ?? null : null}
       onToggle={() => props.onToggle(t)}
       onEdit={() => props.onEdit(t.id)}
       onPick={() => props.onPick(t.id)}
       onDelete={() => props.onDelete(t.id)}
+      compact={compact}
       {...extra}
     />
   );
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <form onSubmit={submit} className="space-y-2.5 border-b border-navy-100 p-4">
-        <div className="flex gap-2">
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="新しいタスクを入力…"
-            maxLength={200}
-            className={`${inputClass} py-2.5 text-[15px]`}
-          />
-          <button type="submit" disabled={!title.trim() || adding} className={`${primaryButton} shrink-0`}>
-            {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-            追加
-          </button>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <PriorityPicker value={priority} onChange={setPriority} />
-          <label className="flex flex-1 items-center gap-1.5 text-xs text-slate-500">
-            <Flag className="h-3.5 w-3.5 text-navy" aria-hidden />
-            <input
-              type="datetime-local"
-              value={due}
-              onChange={(e) => setDue(e.target.value)}
-              className={`${inputClass} min-w-0 py-1 text-xs`}
-              aria-label="期限"
-            />
-          </label>
-        </div>
-      </form>
+    <div className="flex min-h-0 flex-1 flex-col">
 
       {/* テンプレート・セット（分類タブ付き・折りたたみ可） */}
-      <div className="border-b border-navy-100 px-4 py-2.5">
+      <div className="border-b border-navy-100 px-3 py-2">
         <div className="flex items-center justify-between">
           <button
             onClick={() => setTemplatesOpen(!templatesOpen)}
@@ -132,15 +94,25 @@ export function TaskPanel(props: Props) {
           >
             <ChevronRight className={`h-3.5 w-3.5 transition-transform ${templatesOpen ? 'rotate-90' : ''}`} />
             テンプレート・セット
-            <span className="font-normal text-slate-400">{templates.length}</span>
+            <span className="font-normal text-slate-500">{templates.length}</span>
           </button>
-          <button
-            onClick={props.onManageTemplates}
-            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs text-navy-300 hover:bg-navy-50 hover:text-navy"
-          >
-            <Settings2 className="h-3.5 w-3.5" />
-            管理
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={props.onManageRecurring}
+              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs text-navy-400 hover:bg-navy-50 hover:text-navy"
+            >
+              <Repeat className="h-3.5 w-3.5" />
+              定期
+              {props.recurringCount > 0 && <span className="text-slate-500">{props.recurringCount}</span>}
+            </button>
+            <button
+              onClick={props.onManageTemplates}
+              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs text-navy-400 hover:bg-navy-50 hover:text-navy"
+            >
+              <Settings2 className="h-3.5 w-3.5" />
+              管理
+            </button>
+          </div>
         </div>
 
         {templatesOpen && (
@@ -148,7 +120,7 @@ export function TaskPanel(props: Props) {
             {templates.length === 0 ? (
               <button
                 onClick={props.onManageTemplates}
-                className="w-full rounded-lg border border-dashed border-navy-200 py-2 text-xs text-navy-300 hover:bg-navy-50"
+                className="w-full rounded-lg border border-dashed border-navy-200 py-2 text-xs text-navy-400 hover:bg-navy-50"
               >
                 よく使うタスクを登録する
               </button>
@@ -167,14 +139,14 @@ export function TaskPanel(props: Props) {
                       key={t.id}
                       onClick={() => props.onApplyTemplate(t)}
                       title={t.items.map((i) => i.title).join(' / ')}
-                      className="inline-flex items-center gap-1 rounded-full border border-navy-100 bg-white px-2.5 py-1 text-xs text-navy transition hover:border-accent hover:text-accent"
+                      className="inline-flex items-center gap-1 rounded-full border border-navy-100 bg-white px-2.5 py-1 text-xs text-navy transition hover:border-accent hover:bg-accent-50"
                     >
                       {t.items.length > 1 ? <Layers className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
                       {t.name}
-                      {t.items.length > 1 && <span className="text-[10px] text-slate-400">×{t.items.length}</span>}
+                      {t.items.length > 1 && <span className="text-[10px] text-slate-500">×{t.items.length}</span>}
                     </button>
                   ))}
-                  {visibleTemplates.length === 0 && <span className="text-xs text-slate-400">この分類にはまだありません。</span>}
+                  {visibleTemplates.length === 0 && <span className="text-xs text-slate-500">この分類にはまだありません。</span>}
                 </div>
               </>
             )}
@@ -183,7 +155,7 @@ export function TaskPanel(props: Props) {
       </div>
 
       {/* 絞り込み */}
-      <div className="flex items-center gap-2 px-4 pt-3">
+      <div className="flex items-center gap-1.5 px-3 pt-2">
         <div className="flex flex-1 gap-1 rounded-lg bg-navy-50 p-0.5">
           {(
             [
@@ -196,7 +168,7 @@ export function TaskPanel(props: Props) {
               key={value}
               onClick={() => setFilter(value)}
               className={`flex-1 rounded-md px-2 py-1.5 text-xs font-bold transition ${
-                filter === value ? 'bg-white text-navy shadow-sm' : 'text-navy-300 hover:text-navy'
+                filter === value ? 'bg-white text-navy shadow-sm' : 'text-navy-400 hover:text-navy'
               }`}
             >
               {label}
@@ -214,10 +186,18 @@ export function TaskPanel(props: Props) {
             </span>
           )}
         </div>
+        <button
+          onClick={() => setDensity(compact ? 'detail' : 'compact')}
+          className="rounded-md p-1 text-navy-400 hover:bg-navy-50 hover:text-navy"
+          title={compact ? '詳しく表示する' : '1行で多く表示する'}
+          aria-label={compact ? '詳しく表示する' : '1行で多く表示する'}
+        >
+          {compact ? <LayoutList className="h-4 w-4" /> : <List className="h-4 w-4" />}
+        </button>
         {sections.length > 1 && (
           <button
-            onClick={() => setOpenBuckets(allOpen ? [] : sections.map((s) => s.key))}
-            className="rounded-md p-1 text-navy-300 hover:bg-navy-50 hover:text-navy"
+            onClick={() => setClosedBuckets(allOpen ? sections.map((s) => s.key) : [])}
+            className="rounded-md p-1 text-navy-400 hover:bg-navy-50 hover:text-navy"
             title={allOpen ? 'すべて折りたたむ' : 'すべて開く'}
             aria-label={allOpen ? 'すべて折りたたむ' : 'すべて開く'}
           >
@@ -227,19 +207,19 @@ export function TaskPanel(props: Props) {
       </div>
 
       {/* 一覧（日付ごとに折りたたみ） */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-2">
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 pt-1.5">
         {loading ? (
-          <div className="flex justify-center py-12 text-navy-300">
+          <div className="flex justify-center py-12 text-navy-400">
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         ) : sections.length === 0 ? (
-          <div className="mt-2 rounded-xl border border-dashed border-navy-200 py-12 text-center text-sm text-slate-400">
+          <div className="mt-2 rounded-xl border border-dashed border-navy-200 py-12 text-center text-sm text-slate-500">
             {filter === 'done' ? '完了したタスクはありません。' : 'タスクはありません。'}
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {sections.map((s) => {
-              const open = filter === 'done' || openBuckets.includes(s.key);
+              const open = filter === 'done' || !closedBuckets.includes(s.key);
               const count = s.groups.reduce((n, g) => n + 1 + g.children.length, 0);
               const overdue = s.key === 'overdue';
               return (
@@ -255,18 +235,18 @@ export function TaskPanel(props: Props) {
                     >
                       <ChevronRight className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-90' : ''}`} />
                       {overdue ? <AlertCircle className="h-3.5 w-3.5" /> : s.label}
-                      <span className={`ml-auto rounded-full px-1.5 text-[11px] ${overdue ? 'bg-white/25' : 'bg-navy-50 text-navy-300'}`}>
+                      <span className={`ml-auto rounded-full px-1.5 text-[11px] ${overdue ? 'bg-white/25' : 'bg-navy-50 text-navy-400'}`}>
                         {count}
                       </span>
                     </button>
                   )}
                   {open && (
-                    <ul className="mt-1.5 space-y-2">
+                    <ul className={`mt-1 ${compact ? 'space-y-1' : 'space-y-2'}`}>
                       {s.groups.map((g) => {
                         const isOpen = expanded.includes(g.root.id);
                         return (
                           <li key={g.root.id}>
-                            <ul className="space-y-1.5">
+                            <ul className={compact ? 'space-y-1' : 'space-y-1.5'}>
                               {renderItem(
                                 g.root,
                                 g.children.length
@@ -283,7 +263,7 @@ export function TaskPanel(props: Props) {
                               )}
                               {isOpen && (
                                 <li>
-                                  <ul className="ml-5 space-y-1.5 border-l-2 border-navy-100 pl-2">
+                                  <ul className={`ml-4 border-l-2 border-navy-100 pl-1.5 ${compact ? 'space-y-1' : 'space-y-1.5'}`}>
                                     {g.children.map((c) => renderItem(c, { nested: true }))}
                                   </ul>
                                 </li>

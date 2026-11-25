@@ -1,10 +1,13 @@
-import { useState } from 'react';
-import { ArrowLeft, Copy, CornerDownRight, FileText, Layers, Pencil, Plus, Star, Trash2, X } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ArrowLeft, Copy, UserRound, CornerDownRight, FileText, Layers, Pencil, Plus, Star, Trash2, X } from 'lucide-react';
 import type { ItemTiming, Priority, TaskTemplate, TemplateItem } from '@/lib/supabase';
 import { DURATION_OPTIONS, formatDuration } from '@/lib/date';
 import { DAY_OFFSETS, PRIORITIES, dayLabel, priorityMeta, timingLabel } from '@/lib/tasks';
 import { Field, Modal, ghostButton, inputClass, primaryButton } from '@/components/ui';
+import { parsePrice, priceText, yen } from '@/lib/sales';
 import { CategoryTabs } from '@/components/CategoryTabs';
+import { CategorySelect } from '@/components/CategorySelect';
+import { CUSTOMER_TOKEN } from '@/lib/customer';
 import { UNCATEGORIZED, filterByCategory } from '@/lib/category';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
@@ -123,6 +126,10 @@ export function TemplateManager({ templates, categories, onCreate, onUpdate, onD
   const [draft, setDraft] = useState<Draft | null>(null);
   const [tab, setTab] = useLocalStorage<string>('todo.managerCategory', '');
   const [saving, setSaving] = useState(false);
+  // 「{お客さん}を入れる」で、最後に入力していた欄のカーソル位置に差し込む
+  const nameRef = useRef<HTMLInputElement>(null);
+  const itemRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const lastFocus = useRef<{ kind: 'name' } | { kind: 'item'; idx: number }>({ kind: 'item', idx: 0 });
 
   const validItems = draft ? draft.items.filter((i) => i.title.trim()) : [];
   const canSave = !!draft && !!draft.name.trim() && !!draft.items[0]?.title.trim();
@@ -140,6 +147,23 @@ export function TemplateManager({ templates, categories, onCreate, onUpdate, onD
 
   const setItem = (idx: number, patch: Partial<TemplateItem>) =>
     setDraft((d) => (d ? { ...d, items: d.items.map((it, i) => (i === idx ? { ...it, ...patch } : it)) } : d));
+
+  const insertToken = () => {
+    if (!draft) return;
+    const f = lastFocus.current;
+    const el = f.kind === 'name' ? nameRef.current : itemRefs.current[f.idx];
+    const cur = f.kind === 'name' ? draft.name : (draft.items[f.idx]?.title ?? '');
+    const start = el?.selectionStart ?? cur.length;
+    const end = el?.selectionEnd ?? start;
+    const next = cur.slice(0, start) + CUSTOMER_TOKEN + cur.slice(end);
+    if (f.kind === 'name') setDraft({ ...draft, name: next });
+    else setItem(f.idx, { title: next });
+    requestAnimationFrame(() => {
+      const pos = start + CUSTOMER_TOKEN.length;
+      el?.focus();
+      el?.setSelectionRange(pos, pos);
+    });
+  };
 
   if (draft) {
     return (
@@ -161,9 +185,11 @@ export function TemplateManager({ templates, categories, onCreate, onUpdate, onD
         }
       >
         <div className="space-y-4">
-          <Field label="名前（例：BASE-PLUS 対面パーソナル）">
+          <Field label="名前">
             <input
               value={draft.name}
+              ref={nameRef}
+              onFocus={() => (lastFocus.current = { kind: 'name' })}
               onChange={(e) => setDraft({ ...draft, name: e.target.value })}
               className={inputClass}
               maxLength={60}
@@ -171,33 +197,23 @@ export function TemplateManager({ templates, categories, onCreate, onUpdate, onD
             />
           </Field>
 
-          <Field label="分類（例：野球事業、高齢者事業、AI事業、物販事業）">
-            <input
+          <Field label="分類">
+            <CategorySelect
               value={draft.category}
-              onChange={(e) => setDraft({ ...draft, category: e.target.value })}
-              placeholder="未分類"
-              className={inputClass}
-              maxLength={30}
+              categories={categories}
+              onChange={(category) => setDraft({ ...draft, category })}
             />
           </Field>
-          {categories.length > 0 && (
-            <div className="-mt-2 flex flex-wrap gap-1.5">
-              {categories.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setDraft({ ...draft, category: draft.category === c ? '' : c })}
-                  className={`rounded-full border px-2.5 py-0.5 text-xs font-bold transition ${
-                    draft.category.trim() === c
-                      ? 'border-navy bg-navy text-white'
-                      : 'border-navy-100 text-navy-300 hover:border-navy-200 hover:text-navy'
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          )}
+
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-navy-200 px-3 py-2 text-xs text-slate-600">
+            <button type="button" onClick={insertToken} className={`${ghostButton} py-1 text-xs`}>
+              <UserRound className="h-3.5 w-3.5" aria-hidden />
+              {CUSTOMER_TOKEN} を入れる
+            </button>
+            <span className="min-w-0 flex-1">
+              最後に入力していた欄に入ります。登録するときにお客さんの名前を入れると、その名前に置き換わります。
+            </span>
+          </div>
 
           <ol className="space-y-2">
             {draft.items.map((it, idx) => {
@@ -214,22 +230,26 @@ export function TemplateManager({ templates, categories, onCreate, onUpdate, onD
                         コア
                       </span>
                     ) : (
-                      <span className="inline-flex shrink-0 items-center gap-0.5 text-[10px] font-bold text-navy-300">
+                      <span className="inline-flex shrink-0 items-center gap-0.5 text-[10px] font-bold text-navy-400">
                         <CornerDownRight className="h-3.5 w-3.5" />
                         サブ
                       </span>
                     )}
                     <input
+                      ref={(el) => {
+                        itemRefs.current[idx] = el;
+                      }}
+                      onFocus={() => (lastFocus.current = { kind: 'item', idx })}
                       value={it.title}
                       onChange={(e) => setItem(idx, { title: e.target.value })}
-                      placeholder={core ? '例：〇〇さん BASE-PLUS 対面パーソナル' : '例：リマインドを送る'}
+                      placeholder={core ? 'コアのタスク名' : 'サブタスク名'}
                       className={`${inputClass} py-1.5`}
                       maxLength={200}
                     />
                     {!core && (
                       <button
                         onClick={() => setDraft({ ...draft, items: draft.items.filter((_, i) => i !== idx) })}
-                        className="rounded-lg p-1.5 text-slate-300 hover:bg-red-50 hover:text-red-500"
+                        className="rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-500"
                         aria-label="この行を削除"
                       >
                         <X className="h-4 w-4" />
@@ -238,7 +258,23 @@ export function TemplateManager({ templates, categories, onCreate, onUpdate, onD
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-2 pl-1 text-xs text-slate-500">
                     {core ? (
-                      <span className="text-navy-300">日時は登録するときに選びます</span>
+                      <>
+                        <span className="text-navy-400">日時は登録するときに選びます</span>
+                        <span className="relative">
+                          <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-navy-400" aria-hidden>
+                            ¥
+                          </span>
+                          <input
+                            value={priceText(it.price)}
+                            onChange={(e) => setItem(idx, { price: parsePrice(e.target.value) })}
+                            inputMode="numeric"
+                            maxLength={10}
+                            placeholder="単価"
+                            aria-label="単価（円）"
+                            className={`${inputClass} w-28 py-1 pl-5 text-xs tabular-nums`}
+                          />
+                        </span>
+                      </>
                     ) : (
                       <TimingInput value={it.timing} onChange={(timing) => setItem(idx, { timing })} />
                     )}
@@ -299,7 +335,7 @@ export function TemplateManager({ templates, categories, onCreate, onUpdate, onD
       }
     >
       {templates.length === 0 ? (
-        <div className="py-10 text-center text-sm text-slate-400">まだ登録されていません。</div>
+        <div className="py-10 text-center text-sm text-slate-500">まだ登録されていません。</div>
       ) : (
         <div className="space-y-4">
           <CategoryTabs
@@ -313,7 +349,7 @@ export function TemplateManager({ templates, categories, onCreate, onUpdate, onD
               {categories.length > 0 && (
                 <h3 className="mb-1.5 border-b border-navy-100 pb-1 text-xs font-bold text-navy">
                   {cat || '未分類'}
-                  <span className="ml-1.5 font-normal text-slate-400">{list.length}</span>
+                  <span className="ml-1.5 font-normal text-slate-500">{list.length}</span>
                 </h3>
               )}
         <ul className="space-y-2">
@@ -327,7 +363,7 @@ export function TemplateManager({ templates, categories, onCreate, onUpdate, onD
                 </button>
                 <button
                   onClick={() => setDraft({ id: t.id, name: t.name, category: t.category, items: copyItems(t.items) })}
-                  className="rounded-lg p-1.5 text-slate-400 hover:bg-navy-50 hover:text-navy"
+                  className="rounded-lg p-1.5 text-slate-500 hover:bg-navy-50 hover:text-navy"
                   aria-label="編集"
                   title="編集"
                 >
@@ -335,7 +371,7 @@ export function TemplateManager({ templates, categories, onCreate, onUpdate, onD
                 </button>
                 <button
                   onClick={() => setDraft({ name: `${t.name}（コピー）`, category: t.category, items: copyItems(t.items) })}
-                  className="rounded-lg p-1.5 text-slate-400 hover:bg-navy-50 hover:text-navy"
+                  className="rounded-lg p-1.5 text-slate-500 hover:bg-navy-50 hover:text-navy"
                   aria-label="複製"
                   title="複製"
                 >
@@ -345,7 +381,7 @@ export function TemplateManager({ templates, categories, onCreate, onUpdate, onD
                   onClick={() => {
                     if (window.confirm(`「${t.name}」を削除しますか？`)) void onDelete(t.id);
                   }}
-                  className="rounded-lg p-1.5 text-slate-300 hover:bg-red-50 hover:text-red-500"
+                  className="rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-500"
                   aria-label="削除"
                   title="削除"
                 >
@@ -358,11 +394,12 @@ export function TemplateManager({ templates, categories, onCreate, onUpdate, onD
                     {idx === 0 ? (
                       <Star className="h-3 w-3 text-navy" />
                     ) : (
-                      <CornerDownRight className="h-3 w-3 text-navy-300" />
+                      <CornerDownRight className="h-3 w-3 text-navy-400" />
                     )}
                     <span className={`h-1.5 w-1.5 rounded-full ${priorityMeta(i.priority).stripe}`} />
                     {i.title}
-                    {idx > 0 && <span className="font-normal text-slate-400">（{timingLabel(i.timing)}）</span>}
+                    {idx > 0 && <span className="font-normal text-slate-500">（{timingLabel(i.timing)}）</span>}
+                    {!!i.price && <span className="rounded bg-emerald-50 px-1 font-bold tabular-nums text-emerald-700">{yen(i.price)}</span>}
                   </li>
                 ))}
               </ul>

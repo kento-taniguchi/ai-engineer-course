@@ -85,7 +85,21 @@ export function useTodos() {
     return true;
   }, []);
 
+  /** ほかの所（定期タスク）で作った・消したタスクを画面に反映する */
+  const mergeTodos = useCallback((rows: Todo[]) => {
+    if (rows.length === 0) return;
+    setTodos((prev) => {
+      const known = new Set(prev.map((t) => t.id));
+      return [...rows.filter((r) => !known.has(r.id)), ...prev];
+    });
+  }, []);
+  const dropTodos = useCallback((ids: string[]) => {
+    if (ids.length === 0) return;
+    const gone = new Set(ids);
+    setTodos((prev) => prev.filter((t) => !gone.has(t.id)));
+  }, []);
+
   const clearError = useCallback(() => setError(null), []);
 
-  return { todos, loading, error, addTodos, addTaskSet, updateTodo, deleteTodo, clearError };
+  return { todos, loading, error, addTodos, addTaskSet, updateTodo, deleteTodo, mergeTodos, dropTodos, clearError };
 }

@@ -33,7 +33,7 @@ export function CategoryTabs({ categories, hasUncategorized, value, onChange, si
           } ${
             current === t.key
               ? 'border-navy bg-navy text-white'
-              : 'border-navy-100 bg-white text-navy-300 hover:border-navy-200 hover:text-navy'
+              : 'border-navy-100 bg-white text-navy-400 hover:border-navy-200 hover:text-navy'
           }`}
         >
           {t.label}
