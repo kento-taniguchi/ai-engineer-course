@@ -8,6 +8,7 @@
 #   TODO_SUPABASE_ANON_KEY    … Supabase の公開用の鍵（.env の VITE_SUPABASE_ANON_KEY）
 #   LINE_CHANNEL_ACCESS_TOKEN … LINE 公式アカウントの合鍵（Python の ToDo アプリと共通）
 #   LINE_USER_ID              … （省略可）送り先のユーザーID。無ければ友だち全員に送る
+#   TODO_REPORT_TOKEN         … 通知用の合言葉（データは持ち主しか読めないため、これで読む）
 
 name: ToDoアプリ 予定と売上のLINE通知
 
@@ -47,6 +48,7 @@ jobs:
           SUPABASE_ANON_KEY: ${{ secrets.TODO_SUPABASE_ANON_KEY }}
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          TODO_REPORT_TOKEN: ${{ secrets.TODO_REPORT_TOKEN }}
           # 朝の予定（22:00 UTC）なら morning、夜の予定なら evening、手動なら選んだもの
           MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || (github.event.schedule == '0 22 * * *' && 'morning' || 'evening') }}
         run: node scripts/line-report.mjs "$MODE"

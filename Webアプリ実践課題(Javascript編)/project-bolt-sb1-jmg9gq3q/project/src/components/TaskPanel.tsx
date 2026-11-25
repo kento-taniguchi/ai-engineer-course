@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AlertCircle, ChevronRight, ChevronsDownUp, ChevronsUpDown, FileText, LayoutList, Layers, List, Loader2, Repeat, Settings2 } from 'lucide-react';
+import { AlertCircle, ChevronRight, ChevronsDownUp, ChevronsUpDown, FileText, LayoutList, Layers, List, Loader2, Repeat, Settings2, UserRound } from 'lucide-react';
 import type { TaskTemplate, Todo } from '@/lib/supabase';
 import { isOverdue } from '@/lib/tasks';
 import { BUCKETS, DEFAULT_CLOSED, bucketOf, buildGroups, sortGroups, type BucketKey, type ListFilter } from '@/lib/groups';
@@ -21,6 +21,7 @@ interface Props {
   onManageTemplates: () => void;
   recurringCount: number;
   onManageRecurring: () => void;
+  onOpenAccount: () => void;
   onToggle: (t: Todo) => void;
   onEdit: (id: string) => void;
   onPick: (id: string) => void;
@@ -111,6 +112,14 @@ export function TaskPanel(props: Props) {
             >
               <Settings2 className="h-3.5 w-3.5" />
               管理
+            </button>
+            <button
+              onClick={props.onOpenAccount}
+              className="rounded-md p-1 text-navy-400 hover:bg-navy-50 hover:text-navy"
+              aria-label="アカウント（ログアウト）"
+              title="アカウント（ログアウト）"
+            >
+              <UserRound className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>

@@ -20,8 +20,10 @@ import { TemplateManager } from '@/components/TemplateManager';
 import { CalendarView, type CalendarMode } from '@/components/calendar/CalendarView';
 import { SalesDialog, SalesStrip } from '@/components/Sales';
 import type { PeriodKind } from '@/lib/sales';
+import type { Session } from '@supabase/supabase-js';
+import { AccountDialog } from '@/components/AccountDialog';
 
-function App() {
+function App({ session }: { session: Session }) {
   const { todos, loading, error: todoError, addTodos, addTaskSet, updateTodo, deleteTodo, mergeTodos, dropTodos, clearError } = useTodos();
   const tpl = useTemplates();
   const rec = useRecurring();
@@ -39,6 +41,7 @@ function App() {
   const [applying, setApplying] = useState<{ template: TaskTemplate; at: Date | null } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [salesKind, setSalesKind] = useState<PeriodKind | null>(null);
+  const [showAccount, setShowAccount] = useState(false);
 
   const picked = todos.find((t) => t.id === pickedId) ?? null;
   const editing = todos.find((t) => t.id === editingId) ?? null;
@@ -138,6 +141,7 @@ function App() {
   const closeRecurring = useCallback(() => setShowRecurring(false), []);
   const closeQuickAdd = useCallback(() => setQuickAdd(null), []);
   const closeSales = useCallback(() => setSalesKind(null), []);
+  const closeAccount = useCallback(() => setShowAccount(false), []);
 
   return (
     <div className="flex min-h-dvh flex-col lg:h-dvh">
@@ -180,6 +184,7 @@ function App() {
             onManageTemplates={() => setShowTemplates(true)}
             recurringCount={rec.tasks.length}
             onManageRecurring={() => setShowRecurring(true)}
+            onOpenAccount={() => setShowAccount(true)}
             onToggle={(t) => void updateTodo(t.id, { completed: !t.completed })}
             onEdit={setEditingId}
             onPick={togglePick}
@@ -351,6 +356,8 @@ function App() {
           onClose={closeApplying}
         />
       )}
+
+      {showAccount && <AccountDialog session={session} onClose={closeAccount} />}
 
       {salesKind && (
         <SalesDialog

@@ -10,6 +10,7 @@
  *   SUPABASE_URL / SUPABASE_ANON_KEY … データベースの場所と公開用の鍵
  *   LINE_CHANNEL_ACCESS_TOKEN        … LINE 公式アカウントの合鍵
  *   LINE_USER_ID                     … （省略可）送り先。無ければ友だち全員に送る
+ *   TODO_REPORT_TOKEN                … 通知用の合言葉（データベースの private.report_tokens と同じもの）
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -35,6 +36,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || dot.VITE_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || dot.VITE_SUPABASE_ANON_KEY;
 const LINE_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || dot.LINE_CHANNEL_ACCESS_TOKEN;
 const LINE_USER_ID = process.env.LINE_USER_ID || dot.LINE_USER_ID || '';
+const REPORT_TOKEN = process.env.TODO_REPORT_TOKEN || dot.TODO_REPORT_TOKEN || '';
 
 const args = process.argv.slice(2);
 const dry = args.includes('--dry');
@@ -52,9 +54,15 @@ const yen = (n) => `¥${Math.round(n).toLocaleString('ja-JP')}`;
 
 // ---- データを読む -------------------------------------------------------------
 async function fetchTodos() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/todos?select=*&order=created_at.desc`, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
-  });
+  const headers = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
+  // データは持ち主しか読めないので、合言葉を渡して通知用の窓口から読む
+  if (REPORT_TOKEN) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/report_todos`, { method: 'POST', headers, body: JSON.stringify({ p_token: REPORT_TOKEN }) });
+    if (res.ok) return res.json();
+    // 窓口がまだ無い（SQL を実行する前）なら、下の読み方を試す
+    if (res.status !== 404) throw new Error(`タスクを読み込めませんでした（${res.status}）：${await res.text()}`);
+  }
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/todos?select=*&order=created_at.desc`, { headers });
   if (!res.ok) throw new Error(`タスクを読み込めませんでした（${res.status}）：${await res.text()}`);
   return res.json();
 }
