@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { CalendarCheck2, Eye, EyeOff, KeyRound, Loader2, Mail, Send } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { OAUTH_PROVIDERS, asProvider, authErrorText, redirectUrl, type OAuthId } from '@/lib/auth';
+import { OAUTH_PROVIDERS, authErrorText, redirectUrl, type OAuthId } from '@/lib/auth';
 import { Field, inputClass, primaryButton } from '@/components/ui';
 
 /** ログイン方法のマーク（ブランドの形をまねず、頭文字で表す） */
 function ProviderMark({ id }: { id: OAuthId }) {
-  const letter = id === 'google' ? 'G' : id === 'github' ? 'GH' : 'L';
+  const letter = id === 'google' ? 'G' : '?';
   return (
     <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-md bg-black/10 px-1 text-[11px] font-black" aria-hidden>
       {letter}
@@ -26,7 +26,7 @@ export function LoginScreen() {
   const oauth = async (id: OAuthId) => {
     setError('');
     setBusy(id);
-    const { error: e } = await supabase.auth.signInWithOAuth({ provider: asProvider(id), options: { redirectTo: redirectUrl() } });
+    const { error: e } = await supabase.auth.signInWithOAuth({ provider: id, options: { redirectTo: redirectUrl() } });
     // 成功すると、そのままログインの画面へ移動する
     if (e) {
       setError(authErrorText(e.message));

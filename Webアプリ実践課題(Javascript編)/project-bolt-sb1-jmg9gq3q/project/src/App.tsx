@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, CalendarX, MousePointerClick, Pencil, X } from 'lucide-react';
+import { AlertCircle, CalendarDays, ListTodo, X } from 'lucide-react';
+import { GoogleLogo } from '@/components/ui';
 import type { TaskTemplate, TodoPatch } from '@/lib/supabase';
 import { dayKey, formatDateTime } from '@/lib/date';
 import { hasCustomerToken, pastCustomers } from '@/lib/customer';
@@ -22,15 +23,28 @@ import { SalesDialog, SalesStrip } from '@/components/Sales';
 import type { PeriodKind } from '@/lib/sales';
 import type { Session } from '@supabase/supabase-js';
 import { AccountDialog } from '@/components/AccountDialog';
+import { GoogleCalendarDialog } from '@/components/GoogleCalendarDialog';
+import { takeJustConnected } from '@/lib/googleCalendar';
+import { takeLaunchIntent } from '@/lib/launch';
+import { NARROW, PHONE, useMediaQuery } from '@/hooks/useMediaQuery';
+import { isOverdue } from '@/lib/tasks';
 
 function App({ session }: { session: Session }) {
-  const { todos, loading, error: todoError, addTodos, addTaskSet, updateTodo, deleteTodo, mergeTodos, dropTodos, clearError } = useTodos();
+  const { todos, loading, error: todoError, addTodos, addTaskSet, updateTodo, deleteTodo, mergeTodos, dropTodos, clearError, undo, undoGroup } =
+    useTodos();
   const tpl = useTemplates();
   const rec = useRecurring();
   const cat = useCategoryColors();
   const now = useNow();
 
-  const [mode, setMode] = useState<CalendarMode>('week');
+  // LINE のリンクから開いたときは、その画面（今日のカレンダー・売上）から始める
+  const [launch] = useState(takeLaunchIntent);
+  // スマホ・タブレットの幅では、一覧とカレンダーを下のボタンで切り替える
+  const narrow = useMediaQuery(NARROW);
+  const [tab, setTab] = useState<'list' | 'calendar'>(launch === 'today' ? 'calendar' : 'list');
+
+  // スマホは週だと狭いので、日の表示から始める
+  const [mode, setMode] = useState<CalendarMode>(() => (window.matchMedia(PHONE).matches ? 'day' : 'week'));
   const [cursor, setCursor] = useState(() => new Date());
   const [pickedId, setPickedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -40,10 +54,13 @@ function App({ session }: { session: Session }) {
   const [panelWidth, setPanelWidth] = useLocalStorage('todo.panelWidth', PANEL_DEFAULT);
   const [applying, setApplying] = useState<{ template: TaskTemplate; at: Date | null } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [salesKind, setSalesKind] = useState<PeriodKind | null>(null);
+  const [salesKind, setSalesKind] = useState<PeriodKind | null>(() =>
+    launch === 'sales-day' ? 'day' : launch === 'sales-week' ? 'week' : launch === 'sales-month' ? 'month' : null,
+  );
   const [showAccount, setShowAccount] = useState(false);
+  // Google の許可画面から戻ってきたときは、取り込みの画面を開いたままにする
+  const [showGcal, setShowGcal] = useState(takeJustConnected);
 
-  const picked = todos.find((t) => t.id === pickedId) ?? null;
   const editing = todos.find((t) => t.id === editingId) ?? null;
   const error = todoError ?? tpl.error ?? rec.error ?? cat.error;
 
@@ -84,6 +101,22 @@ function App({ session }: { session: Session }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [pickedId]);
+
+  // Ctrl+Z（Mac は ⌘+Z）：タスクの追加・変更・移動・削除を1つずつ元に戻す。
+  // 文字を入力している欄の中では、ふつうの「入力の取り消し」にまかせる
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.code !== 'KeyZ' || e.isComposing) return;
+      const el = e.target as HTMLElement | null;
+      if (el?.isContentEditable || el instanceof HTMLTextAreaElement) return;
+      if (el instanceof HTMLInputElement && !['checkbox', 'radio', 'button', 'submit', 'range', 'color'].includes(el.type)) return;
+      e.preventDefault();
+      setPickedId(null);
+      void undo().then((label) => setToast(label ? `元に戻しました（${label}）` : '元に戻せる操作はありません'));
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [undo]);
 
   /** base はコアタスクの実施日時（null ならカレンダーに入れない）。customer は {お客さん} に入る名前 */
   const applyTemplate = async (t: TaskTemplate, base: Date | null, customer = '') => {
@@ -134,7 +167,11 @@ function App({ session }: { session: Session }) {
     void deleteTodo(id);
   };
 
-  const togglePick = (id: string) => setPickedId((cur) => (cur === id ? null : id));
+  const togglePick = (id: string) => {
+    // スマホでは、一覧で選んだらカレンダーに切り替えて、置く日時を押せるようにする
+    if (narrow && pickedId !== id) setTab('calendar');
+    setPickedId((cur) => (cur === id ? null : id));
+  };
   const closeEditor = useCallback(() => setEditingId(null), []);
   const closeTemplates = useCallback(() => setShowTemplates(false), []);
   const closeApplying = useCallback(() => setApplying(null), []);
@@ -142,9 +179,11 @@ function App({ session }: { session: Session }) {
   const closeQuickAdd = useCallback(() => setQuickAdd(null), []);
   const closeSales = useCallback(() => setSalesKind(null), []);
   const closeAccount = useCallback(() => setShowAccount(false), []);
+  const closeGcal = useCallback(() => setShowGcal(false), []);
+  const overdueCount = todos.filter((t) => isOverdue(t, now)).length;
 
   return (
-    <div className="flex min-h-dvh flex-col lg:h-dvh">
+    <div className="flex h-dvh flex-col">
       {error && (
         <div className="fixed inset-x-0 top-2 z-40 flex justify-center px-3" role="alert">
           <div className="flex w-full max-w-2xl items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700 shadow-lg">
@@ -167,10 +206,12 @@ function App({ session }: { session: Session }) {
       )}
 
       <main
-        className="grid w-full min-h-0 flex-1 gap-2 p-2 lg:grid-cols-[var(--panel-w)_10px_minmax(0,1fr)] lg:gap-0"
+        className="grid min-h-0 w-full flex-1 grid-rows-[minmax(0,1fr)] gap-2 p-1.5 sm:p-2 lg:grid-cols-[var(--panel-w)_10px_minmax(0,1fr)] lg:gap-0"
         style={{ '--panel-w': `${panelWidth}px` } as React.CSSProperties}
       >
-        <section className="flex h-[640px] min-h-0 flex-col overflow-hidden rounded-xl border border-navy-100 bg-white lg:h-auto">
+        <section
+          className={`${tab === 'list' ? 'flex' : 'hidden'} min-h-0 flex-col overflow-hidden rounded-xl border border-navy-100 bg-white lg:flex`}
+        >
           <SalesStrip todos={todos} now={now} onOpen={setSalesKind} />
           <TaskPanel
             todos={todos}
@@ -185,6 +226,7 @@ function App({ session }: { session: Session }) {
             recurringCount={rec.tasks.length}
             onManageRecurring={() => setShowRecurring(true)}
             onOpenAccount={() => setShowAccount(true)}
+            onImportGoogle={() => setShowGcal(true)}
             onToggle={(t) => void updateTodo(t.id, { completed: !t.completed })}
             onEdit={setEditingId}
             onPick={togglePick}
@@ -194,34 +236,9 @@ function App({ session }: { session: Session }) {
 
         <PanelDivider width={panelWidth} onChange={setPanelWidth} />
 
-        <section className="flex h-[760px] min-h-0 flex-col overflow-hidden rounded-xl border border-navy-100 bg-white lg:h-auto">
-          {picked && (
-            <div className="flex flex-wrap items-center gap-2 border-b border-accent/30 bg-accent-50 px-4 py-2 text-sm">
-              <MousePointerClick className="h-4 w-4 shrink-0 text-accent-600" />
-              <span className="min-w-0 flex-1 truncate text-slate-700">
-                <span className="font-bold text-navy">{picked.title}</span> を置く日時をクリック
-              </span>
-              <button onClick={() => setEditingId(picked.id)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-navy hover:bg-white">
-                <Pencil className="h-3.5 w-3.5" />
-                編集
-              </button>
-              {picked.scheduled_at && (
-                <button
-                  onClick={() => {
-                    void updateTodo(picked.id, { scheduled_at: null });
-                    setPickedId(null);
-                  }}
-                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-navy hover:bg-white"
-                >
-                  <CalendarX className="h-3.5 w-3.5" />
-                  外す
-                </button>
-              )}
-              <button onClick={() => setPickedId(null)} className="rounded-md p-1 text-slate-500 hover:bg-white" aria-label="やめる">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          )}
+        <section
+          className={`${tab === 'calendar' ? 'flex' : 'hidden'} min-h-0 flex-col overflow-hidden rounded-xl border border-navy-100 bg-white lg:flex`}
+        >
           <div className="min-h-0 flex-1">
             <CalendarView
               mode={mode}
@@ -243,6 +260,44 @@ function App({ session }: { session: Session }) {
           </div>
         </section>
       </main>
+
+      {/* スマホ・タブレット：一覧とカレンダーの切り替え */}
+      <nav
+        className="grid shrink-0 grid-cols-3 border-t border-navy-100 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
+        aria-label="画面の切り替え"
+      >
+        {(
+          [
+            ['list', '一覧', ListTodo],
+            ['calendar', 'カレンダー', CalendarDays],
+          ] as const
+        ).map(([value, label, Icon]) => (
+          <button
+            key={value}
+            onClick={() => setTab(value)}
+            aria-current={tab === value ? 'page' : undefined}
+            className={`relative flex flex-col items-center gap-0.5 py-2 text-[11px] font-bold transition ${
+              tab === value ? 'text-navy' : 'text-slate-400'
+            }`}
+          >
+            {tab === value && <span className="absolute inset-x-6 top-0 h-0.5 rounded-full bg-accent" aria-hidden />}
+            <Icon className="h-5 w-5" aria-hidden />
+            {label}
+            {value === 'list' && overdueCount > 0 && (
+              <span className="absolute right-[calc(50%-1.6rem)] top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] text-white">
+                {overdueCount}
+              </span>
+            )}
+          </button>
+        ))}
+        <button
+          onClick={() => setShowGcal(true)}
+          className="flex flex-col items-center gap-0.5 py-2 text-[11px] font-bold text-slate-400 transition hover:text-navy"
+        >
+          <GoogleLogo className="h-5 w-5" />
+          Google取込
+        </button>
+      </nav>
 
       {editing && (
         <TaskEditor
@@ -359,6 +414,21 @@ function App({ session }: { session: Session }) {
 
       {showAccount && <AccountDialog session={session} onClose={closeAccount} />}
 
+      {showGcal && (
+        <GoogleCalendarDialog
+          todos={todos}
+          categories={allCategories}
+          templates={tpl.templates}
+          onAdd={addTodos}
+          onAddSet={addTaskSet}
+          onUpdate={updateTodo}
+          onDelete={deleteTodo}
+          group={undoGroup}
+          onDone={setToast}
+          onClose={closeGcal}
+        />
+      )}
+
       {salesKind && (
         <SalesDialog
           todos={todos}
@@ -374,7 +444,7 @@ function App({ session }: { session: Session }) {
       )}
 
       {toast && (
-        <div className="pointer-events-none fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full bg-navy px-4 py-2 text-sm text-white shadow-lg">
+        <div className="pointer-events-none fixed bottom-20 left-1/2 z-[60] w-max max-w-[90vw] -translate-x-1/2 rounded-full bg-navy px-4 py-2 text-center text-sm text-white shadow-lg lg:bottom-5">
           {toast}
         </div>
       )}

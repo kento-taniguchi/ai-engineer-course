@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Flag, GripHorizontal } from 'lucide-react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { PHONE, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { CategoryColor } from '@/lib/colors';
 import type { Todo } from '@/lib/supabase';
 import { WEEKDAYS, dayKey, formatTime, isSameDay } from '@/lib/date';
@@ -88,7 +89,12 @@ export function TimeGrid({ days, todos, now, pickedId, hourPx, onAddDue, colorOf
     [],
   );
   const [dragKey, setDragKey] = useState<string | null>(null);
-  const cols = `52px repeat(${days.length}, minmax(0, 1fr))`;
+  // 予定を掴んでいるとき、マウスの下の時刻（そこに置いたときの影を出す）
+  const [hoverKey, setHoverKey] = useState<string | null>(null);
+  const picked = pickedId ? todos.find((t) => t.id === pickedId) ?? null : null;
+  // スマホでは時刻の列を細くして、予定の欄を広くする
+  const phone = useMediaQuery(PHONE);
+  const cols = `${phone ? 38 : 52}px repeat(${days.length}, minmax(0, 1fr))`;
   const [dueHeight, setDueHeight] = useLocalStorage('todo.dueRowHeight', DUE_DEFAULT);
   const [lastOpenHeight, setLastOpenHeight] = useLocalStorage('todo.dueRowOpenHeight', DUE_DEFAULT);
   const [resizing, setResizing] = useState(false);
@@ -235,7 +241,10 @@ export function TimeGrid({ days, todos, now, pickedId, hourPx, onAddDue, colorOf
         ref={scrollRef}
         className="min-h-0 flex-1 overflow-y-auto"
         onMouseMove={(e) => (pickedId ? edgeScroll(e.clientY) : stopScroll())}
-        onMouseLeave={stopScroll}
+        onMouseLeave={() => {
+          stopScroll();
+          setHoverKey(null);
+        }}
         onDragOver={(e) => edgeScroll(e.clientY)}
         onDrop={stopScroll}
       >
@@ -246,7 +255,7 @@ export function TimeGrid({ days, todos, now, pickedId, hourPx, onAddDue, colorOf
               .map((h) => (
               <div
                 key={h}
-                className="absolute right-2 -translate-y-1/2 text-[11px] tabular-nums text-slate-500"
+                className="absolute right-1 -translate-y-1/2 text-[10px] tabular-nums text-slate-500 sm:right-2 sm:text-[11px]"
                 style={{ top: h * HOUR_PX }}
               >
                 {h}:00
@@ -267,6 +276,7 @@ export function TimeGrid({ days, todos, now, pickedId, hourPx, onAddDue, colorOf
                     <div
                       key={i}
                       onClick={() => onSlot(at)}
+                      onMouseEnter={() => picked && setHoverKey(key)}
                       onDragOver={(e) => {
                         e.preventDefault();
                         e.dataTransfer.dropEffect = 'move';
@@ -286,6 +296,31 @@ export function TimeGrid({ days, todos, now, pickedId, hourPx, onAddDue, colorOf
                     />
                   );
                 })}
+
+                {picked &&
+                  hoverKey?.startsWith(`${dayKey(day)}-`) &&
+                  (() => {
+                    const slot = Number(hoverKey.slice(dayKey(day).length + 1));
+                    const at = new Date(day);
+                    at.setHours(Math.floor(slot / 2), (slot % 2) * 30, 0, 0);
+                    const minutes = Math.min(picked.duration_minutes || 60, 24 * 60 - slot * 30);
+                    return (
+                      <div
+                        className="pointer-events-none absolute inset-x-0.5 z-[15] overflow-hidden rounded-md border-2 border-dashed px-1.5 py-0.5 text-[11px] font-bold leading-tight text-navy"
+                        style={{
+                          top: slot * (HOUR_PX / 2) + 1,
+                          height: Math.max(minutes * MIN_PX, Math.min(20, HOUR_PX / 2)) - 2,
+                          borderColor: colorOf(picked.category).solid,
+                          backgroundColor: `${colorOf(picked.category).solid}33`,
+                        }}
+                        aria-hidden
+                      >
+                        <div className="truncate">
+                          {formatTime(at)}〜 {picked.title}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                 {today && (
                   <div

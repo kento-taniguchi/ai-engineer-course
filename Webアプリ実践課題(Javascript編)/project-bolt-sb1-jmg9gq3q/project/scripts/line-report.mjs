@@ -11,6 +11,7 @@
  *   LINE_CHANNEL_ACCESS_TOKEN        … LINE 公式アカウントの合鍵
  *   LINE_USER_ID                     … （省略可）送り先。無ければ友だち全員に送る
  *   TODO_REPORT_TOKEN                … 通知用の合言葉（データベースの private.report_tokens と同じもの）
+ *   TODO_APP_URL                     … （省略可）メッセージに付けるアプリのアドレス。無ければ公開中のアドレス
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -37,6 +38,15 @@ const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || dot.VITE_SUPABASE_ANON_KEY
 const LINE_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || dot.LINE_CHANNEL_ACCESS_TOKEN;
 const LINE_USER_ID = process.env.LINE_USER_ID || dot.LINE_USER_ID || '';
 const REPORT_TOKEN = process.env.TODO_REPORT_TOKEN || dot.TODO_REPORT_TOKEN || '';
+const APP_URL = (process.env.TODO_APP_URL || dot.TODO_APP_URL || 'https://todo-sales-manager.vercel.app').replace(/\/+$/, '');
+
+/**
+ * メッセージの最後に付ける、アプリを開くリンク。
+ *   open=… … アプリで最初に見せる画面（today = 今日のカレンダー、sales-day など = 売上）
+ *   openExternalBrowser=1 … LINE の中ではなく、いつものブラウザ（Safari・Chrome）で開く。
+ *     LINE の中のブラウザだと、Google ログインが使えず、ログインもし直しになるため
+ */
+const appLink = (open, label) => `\n\n▶ ${label}\n${APP_URL}/?open=${open}&openExternalBrowser=1`;
 
 const args = process.argv.slice(2);
 const dry = args.includes('--dry');
@@ -126,7 +136,7 @@ function morningText(todos, now) {
 
   const s = summarize(todos, today, tomorrow);
   if (s.planned) lines.push('', `今日の売上見込み：${yen(s.planned)}（${s.count}件）`);
-  return lines.join('\n');
+  return lines.join('\n') + appLink('today', 'アプリで今日の予定を開く');
 }
 
 function breakdown(s) {
@@ -144,7 +154,7 @@ function dailyText(todos, day) {
     lines.push('※ 終わっていたら、アプリで「完了」にすると売上に入ります。');
   }
   lines.push(...breakdown(s));
-  return lines.join('\n');
+  return lines.join('\n') + appLink('sales-day', 'アプリで今日の売上を開く');
 }
 
 function weeklyText(todos, day) {
@@ -160,7 +170,7 @@ function weeklyText(todos, day) {
     lines.push(`${md(d)} ${yen(one.done)}`);
   }
   lines.push(...breakdown(s));
-  return lines.join('\n');
+  return lines.join('\n') + appLink('sales-week', 'アプリで今週の売上を開く');
 }
 
 function monthlyText(todos, day) {
@@ -179,7 +189,7 @@ function monthlyText(todos, day) {
     lines.push(`${a.getMonth() + 1}/${a.getDate()}〜${addDays(b, -1).getMonth() + 1}/${addDays(b, -1).getDate()} ${yen(one.done)}`);
   }
   lines.push(...breakdown(s));
-  return lines.join('\n');
+  return lines.join('\n') + appLink('sales-month', 'アプリで今月の売上を開く');
 }
 
 // ---- LINE に送る -------------------------------------------------------------

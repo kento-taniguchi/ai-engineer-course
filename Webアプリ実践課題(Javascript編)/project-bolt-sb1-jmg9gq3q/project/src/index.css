@@ -37,3 +37,21 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* スマホ：入力欄の文字が16pxより小さいと、押したときに画面が勝手に拡大されるので、16pxにそろえる */
+@media (max-width: 639px) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* スマホ：押したときの青い影を出さない・ダブルタップで拡大しない */
+@media (pointer: coarse) {
+  button,
+  [role='button'] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}

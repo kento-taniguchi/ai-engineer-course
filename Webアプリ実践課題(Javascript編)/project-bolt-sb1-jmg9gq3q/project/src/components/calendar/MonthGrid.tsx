@@ -41,7 +41,8 @@ export function MonthGrid({ cursor, todos, now, pickedId, colorOf, onDayClick, o
           </div>
         ))}
       </div>
-      <div className="grid min-h-0 flex-1 grid-cols-7 grid-rows-6">
+      {/* 入りきらないときは上下に動かせる（スマホなど） */}
+      <div className="grid min-h-0 flex-1 grid-cols-7 grid-rows-[repeat(6,minmax(68px,1fr))] overflow-y-auto sm:grid-rows-[repeat(6,minmax(84px,1fr))]">
         {days.map((day) => {
           const key = dayKey(day);
           const inMonth = day.getMonth() === cursor.getMonth();
@@ -69,7 +70,7 @@ export function MonthGrid({ cursor, todos, now, pickedId, colorOf, onDayClick, o
                 const id = e.dataTransfer.getData('text/plain');
                 if (id) onDropTodo(id, day);
               }}
-              className={`flex min-h-[84px] cursor-pointer flex-col gap-0.5 overflow-hidden border-b border-l border-navy-50 p-1 transition ${
+              className={`flex min-w-0 cursor-pointer flex-col gap-0.5 overflow-hidden border-b border-l border-navy-50 p-1 transition ${
                 inMonth ? 'bg-white' : 'bg-canvas'
               } ${pickedId ? 'hover:bg-accent/10' : 'hover:bg-navy-50/60'} ${dragKey === key ? 'bg-accent/20' : ''}`}
             >

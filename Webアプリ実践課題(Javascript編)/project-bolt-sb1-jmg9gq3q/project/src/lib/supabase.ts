@@ -33,6 +33,10 @@ export interface Todo {
   category: string;
   /** 単価（円）。null は単価なし */
   price: number | null;
+  /** Google カレンダーから取り込んだ予定なら「カレンダーID:予定ID」 */
+  google_event_id: string | null;
+  /** Google 側で最後に変更された日時 */
+  google_updated: string | null;
   created_at: string;
 }
 
@@ -51,10 +55,16 @@ export type TodoPatch = Partial<
     | 'timing'
     | 'category'
     | 'price'
+    | 'google_updated'
   >
 >;
 
-export type NewTodo = TodoPatch & { title: string; recurrence_id?: string | null; occurs_on?: string | null };
+export type NewTodo = TodoPatch & {
+  title: string;
+  recurrence_id?: string | null;
+  occurs_on?: string | null;
+  google_event_id?: string | null;
+};
 
 /**
  * サブタスクの時刻の決め方

@@ -3,7 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import { CheckCircle2, KeyRound, Link2, Loader2, LogOut } from 'lucide-react';
 import { NewPasswordForm } from '@/components/NewPasswordForm';
 import { supabase } from '@/lib/supabase';
-import { OAUTH_PROVIDERS, asProvider, authErrorText, redirectUrl, type OAuthId } from '@/lib/auth';
+import { OAUTH_PROVIDERS, authErrorText, redirectUrl, type OAuthId } from '@/lib/auth';
 import { Modal, ghostButton } from '@/components/ui';
 
 /** アカウント：ログイン中の情報、ほかのログイン方法の追加、ログアウト */
@@ -18,7 +18,7 @@ export function AccountDialog({ session, onClose }: { session: Session; onClose:
   const link = async (id: OAuthId) => {
     setError('');
     setBusy(id);
-    const { error: e } = await supabase.auth.linkIdentity({ provider: asProvider(id), options: { redirectTo: redirectUrl() } });
+    const { error: e } = await supabase.auth.linkIdentity({ provider: id, options: { redirectTo: redirectUrl() } });
     if (e) {
       setError(authErrorText(e.message));
       setBusy(null);

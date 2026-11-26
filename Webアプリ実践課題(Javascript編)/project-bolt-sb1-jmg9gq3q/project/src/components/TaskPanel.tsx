@@ -6,6 +6,7 @@ import { BUCKETS, DEFAULT_CLOSED, bucketOf, buildGroups, sortGroups, type Bucket
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { TaskItem } from '@/components/TaskItem';
 import { CategoryTabs } from '@/components/CategoryTabs';
+import { GoogleLogo } from '@/components/ui';
 import { filterByCategory } from '@/lib/category';
 import type { CategoryColor } from '@/lib/colors';
 
@@ -22,6 +23,7 @@ interface Props {
   recurringCount: number;
   onManageRecurring: () => void;
   onOpenAccount: () => void;
+  onImportGoogle: () => void;
   onToggle: (t: Todo) => void;
   onEdit: (id: string) => void;
   onPick: (id: string) => void;
@@ -91,31 +93,43 @@ export function TaskPanel(props: Props) {
           <button
             onClick={() => setTemplatesOpen(!templatesOpen)}
             aria-expanded={templatesOpen}
-            className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-xs font-bold text-navy hover:bg-navy-50"
+            aria-label="テンプレート・セット"
+            title={templatesOpen ? 'テンプレート・セットを閉じる' : 'テンプレート・セットを開く'}
+            className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-1 text-xs font-bold text-navy hover:bg-navy-50"
           >
             <ChevronRight className={`h-3.5 w-3.5 transition-transform ${templatesOpen ? 'rotate-90' : ''}`} />
-            テンプレート・セット
+            <Layers className="h-3.5 w-3.5" aria-hidden />
             <span className="font-normal text-slate-500">{templates.length}</span>
           </button>
           <div className="flex items-center gap-1">
             <button
               onClick={props.onManageRecurring}
-              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs text-navy-400 hover:bg-navy-50 hover:text-navy"
+              aria-label="定期タスク"
+              title="定期タスク"
+              className="inline-flex items-center gap-1 rounded-md p-1.5 text-xs text-navy-400 hover:bg-navy-50 hover:text-navy sm:p-1"
             >
               <Repeat className="h-3.5 w-3.5" />
-              定期
               {props.recurringCount > 0 && <span className="text-slate-500">{props.recurringCount}</span>}
             </button>
             <button
               onClick={props.onManageTemplates}
-              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs text-navy-400 hover:bg-navy-50 hover:text-navy"
+              aria-label="テンプレート・セットの管理"
+              title="テンプレート・セットの管理"
+              className="rounded-md p-1.5 text-navy-400 hover:bg-navy-50 hover:text-navy sm:p-1"
             >
               <Settings2 className="h-3.5 w-3.5" />
-              管理
+            </button>
+            <button
+              onClick={props.onImportGoogle}
+              className="hidden rounded-md p-1 hover:bg-navy-50 lg:inline-flex"
+              aria-label="Googleカレンダーの予定を取り込む"
+              title="Googleカレンダーの予定を取り込む"
+            >
+              <GoogleLogo className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={props.onOpenAccount}
-              className="rounded-md p-1 text-navy-400 hover:bg-navy-50 hover:text-navy"
+              className="rounded-md p-1.5 text-navy-400 hover:bg-navy-50 hover:text-navy sm:p-1"
               aria-label="アカウント（ログアウト）"
               title="アカウント（ログアウト）"
             >

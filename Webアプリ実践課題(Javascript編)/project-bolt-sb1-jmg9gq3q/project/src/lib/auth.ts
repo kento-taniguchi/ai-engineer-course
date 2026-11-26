@@ -1,16 +1,7 @@
-import type { Provider } from '@supabase/supabase-js';
-
-/** 画面に出すログイン方法。LINE は Supabase の「独自のログイン方法（custom:）」で設定する */
-export const OAUTH_PROVIDERS = [
-  { id: 'google', label: 'Google', color: '#FFFFFF', text: '#1F2937', border: '#D1D5DB' },
-  { id: 'custom:line', label: 'LINE', color: '#06C755', text: '#FFFFFF', border: '#06C755' },
-  { id: 'github', label: 'GitHub', color: '#24292F', text: '#FFFFFF', border: '#24292F' },
-] as const;
+/** 画面に出すログイン方法（メールアドレスのほかに使えるもの） */
+export const OAUTH_PROVIDERS = [{ id: 'google', label: 'Google', color: '#FFFFFF', text: '#1F2937', border: '#D1D5DB' }] as const;
 
 export type OAuthId = (typeof OAUTH_PROVIDERS)[number]['id'];
-
-/** 古い型の定義には custom: が無いので、文字列のまま渡す */
-export const asProvider = (id: OAuthId) => id as unknown as Provider;
 
 /** ログイン後に戻ってくる場所（いま開いているアドレス） */
 export const redirectUrl = () => `${window.location.origin}${window.location.pathname}`;

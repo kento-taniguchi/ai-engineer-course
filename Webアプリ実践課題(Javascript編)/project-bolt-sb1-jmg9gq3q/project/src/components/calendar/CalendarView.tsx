@@ -99,7 +99,7 @@ export function CalendarView(props: Props) {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex flex-wrap items-center gap-2 border-b border-navy-100 px-3 py-2">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 border-b border-navy-100 px-2 py-1.5 sm:px-3 sm:py-2">
         <div className="flex items-center gap-1">
           <button onClick={() => step(-1)} className="rounded-lg p-1.5 text-navy hover:bg-navy-50" aria-label="前へ">
             <ChevronLeft className="h-5 w-5" />
@@ -114,7 +114,7 @@ export function CalendarView(props: Props) {
             今日
           </button>
         </div>
-        <h2 className="flex-1 text-base font-bold text-navy sm:text-lg">{titleOf(mode, cursor)}</h2>
+        <h2 className="min-w-0 flex-1 truncate text-sm font-bold text-navy sm:text-lg">{titleOf(mode, cursor)}</h2>
         {mode !== 'month' && (
           <div className="flex items-center gap-0.5 rounded-lg bg-navy-50 p-0.5" role="group" aria-label="時間の欄の大きさ">
             <button onClick={() => zoom(-1)} disabled={hourPx === HOUR_LEVELS[0]} className={zoomBtn} title="小さくする" aria-label="小さくする">
@@ -124,12 +124,13 @@ export function CalendarView(props: Props) {
               onClick={() => setHourPx(hourPx === 'fit' ? 48 : 'fit')}
               aria-pressed={hourPx === 'fit'}
               title="0時〜24時を1画面に表示"
+              aria-label="0時〜24時を1画面に表示"
               className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-bold transition ${
                 hourPx === 'fit' ? 'bg-navy text-white' : 'text-navy-400 hover:bg-white hover:text-navy'
               }`}
             >
               <Maximize2 className="h-3.5 w-3.5" aria-hidden />
-              1日を表示
+              <span className="hidden sm:inline">1日を表示</span>
             </button>
             <button
               onClick={() => zoom(1)}
@@ -153,7 +154,7 @@ export function CalendarView(props: Props) {
             <button
               key={value}
               onClick={() => props.onModeChange(value)}
-              className={`rounded-md px-3.5 py-1 text-sm font-bold transition ${
+              className={`rounded-md px-3 py-1 text-sm font-bold transition sm:px-3.5 ${
                 mode === value ? 'bg-navy text-white shadow-sm' : 'text-navy-400 hover:text-navy'
               }`}
             >

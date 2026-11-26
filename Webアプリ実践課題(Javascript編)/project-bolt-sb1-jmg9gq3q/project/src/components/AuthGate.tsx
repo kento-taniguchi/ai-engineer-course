@@ -5,6 +5,7 @@ import { NewPasswordForm } from '@/components/NewPasswordForm';
 import { supabase } from '@/lib/supabase';
 import { LoginScreen } from '@/components/LoginScreen';
 import { ghostButton } from '@/components/ui';
+import { captureCalendarToken } from '@/lib/googleCalendar';
 
 type Access = 'checking' | 'owner' | 'denied' | 'error';
 
@@ -22,10 +23,13 @@ export function AuthGate({ children }: { children: (session: Session) => ReactNo
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
+      captureCalendarToken(data.session);
       setSession(data.session);
       setReady(true);
     });
     const { data } = supabase.auth.onAuthStateChange((event, s) => {
+      // Google カレンダーの許可から戻ってきたときは、届いた通行証を受け取っておく
+      captureCalendarToken(s);
       setSession(s);
       if (event === 'PASSWORD_RECOVERY') setRecovery(true);
     });
