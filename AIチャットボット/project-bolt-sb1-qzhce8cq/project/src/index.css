@@ -1,3 +1,90 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* 色の中身（R G B）。ライト＝朝の光が差すカフェ、ダーク＝夜の深煎り */
+:root {
+  --c-canvas: 246 241 234;
+  --c-surface: 255 253 249;
+  --c-sunken: 239 232 222;
+  --c-line: 226 215 201;
+  --c-ink: 42 30 23;
+  --c-muted: 107 90 78;
+  --c-roast: 59 42 32;
+  --c-on-roast: 255 250 243;
+  --c-caramel: 150 88 38;
+  --c-caramel-soft: 245 230 211;
+  --c-sage: 79 110 82;
+  --c-berry: 166 52 52;
+  --c-shadow: 59 42 32;
+  color-scheme: light;
+}
+
+.dark {
+  --c-canvas: 23 17 13;
+  --c-surface: 34 25 19;
+  --c-sunken: 44 33 25;
+  --c-line: 61 46 36;
+  --c-ink: 243 234 224;
+  --c-muted: 191 172 155;
+  --c-roast: 231 207 175;
+  --c-on-roast: 27 19 14;
+  --c-caramel: 222 165 104;
+  --c-caramel-soft: 60 42 28;
+  --c-sage: 143 184 146;
+  --c-berry: 236 128 118;
+  --c-shadow: 0 0 0;
+  color-scheme: dark;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-caramel ring-offset-2 ring-offset-canvas;
+  }
+  button {
+    touch-action: manipulation;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-full bg-roast px-5 text-sm font-medium text-on-roast transition duration-150 hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-ghost {
+    @apply inline-flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-full px-4 text-sm text-ink ring-1 ring-line transition duration-150 hover:bg-sunken active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .icon-btn {
+    @apply inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted transition duration-150 hover:bg-sunken hover:text-ink;
+  }
+  .field {
+    @apply min-h-[44px] w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-base text-ink outline-none transition placeholder:text-muted/70 focus:border-caramel focus:ring-2 focus:ring-caramel/25 sm:text-sm;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-medium tracking-wide text-muted;
+  }
+  .card {
+    @apply rounded-2xl border border-line bg-surface shadow-soft;
+  }
+  .eyebrow {
+    @apply text-[11px] font-medium uppercase tracking-[0.18em] text-caramel;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

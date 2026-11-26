@@ -1,15 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, Square } from "lucide-react";
+import { ArrowUp, CalendarCheck, Square } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 interface ChatInputProps {
   onSend: (text: string) => void;
   onStop: () => void;
+  onReserve: () => void;
   isStreaming: boolean;
+  quota: { remaining: number | null; limit: number | null } | null;
 }
 
-export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
+export function ChatInput({ onSend, onStop, onReserve, isStreaming, quota }: ChatInputProps) {
+  const { t } = useI18n();
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const outOfQuota = quota?.remaining === 0;
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -19,54 +24,66 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
   }, [text]);
 
   const handleSend = () => {
-    if (!text.trim() || isStreaming) return;
+    if (!text.trim() || isStreaming || outOfQuota) return;
     onSend(text.trim());
     setText("");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    // 日本語入力の変換確定のEnterでは送信しない
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) {
       e.preventDefault();
       handleSend();
     }
   };
 
   return (
-    <div className="border-t border-slate-200 bg-white px-4 py-3">
-      <div className="mx-auto flex max-w-3xl items-end gap-2">
-        <div className="relative flex-1">
+    <div className="px-3 pb-[max(env(safe-area-inset-bottom),12px)] pt-2 sm:px-4">
+      <div className="mx-auto max-w-3xl">
+        <div className="flex items-end gap-2 rounded-[28px] border border-line bg-surface p-2 shadow-soft transition focus-within:border-caramel/60 focus-within:ring-4 focus-within:ring-caramel/10">
+          <button onClick={onReserve} className="icon-btn h-11 w-11" aria-label={t("reserve")} title={t("reserve")}>
+            <CalendarCheck size={19} />
+          </button>
           <textarea
             ref={textareaRef}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={1}
-            placeholder="メッセージを入力してください..."
-            className="w-full resize-none rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 pr-12 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white"
+            maxLength={1000}
+            disabled={outOfQuota}
+            placeholder={outOfQuota ? t("quotaOutUser", { n: quota?.limit ?? "" }) : t("inputPlaceholder")}
+            aria-label={t("inputPlaceholder")}
+            className="max-h-40 min-h-[44px] flex-1 resize-none bg-transparent px-1 py-2.5 text-base text-ink outline-none placeholder:text-muted/80 disabled:cursor-not-allowed sm:text-[15px]"
           />
+          {isStreaming ? (
+            <button
+              onClick={onStop}
+              className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-sunken text-ink transition hover:opacity-80 active:scale-95"
+              aria-label={t("stop")}
+            >
+              <Square size={16} fill="currentColor" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSend}
+              disabled={!text.trim() || outOfQuota}
+              className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-roast text-on-roast transition hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label={t("send")}
+            >
+              <ArrowUp size={20} />
+            </button>
+          )}
         </div>
-        {isStreaming ? (
-          <button
-            onClick={onStop}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-700 transition-colors hover:bg-slate-300 active:scale-95"
-            aria-label="停止"
-          >
-            <Square size={18} fill="currentColor" />
-          </button>
-        ) : (
-          <button
-            onClick={handleSend}
-            disabled={!text.trim()}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white transition-all hover:bg-indigo-500 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-300"
-            aria-label="送信"
-          >
-            <ArrowUp size={20} />
-          </button>
-        )}
+        <div className="mt-1.5 flex items-center justify-between px-3 text-[11px] text-muted">
+          <span className="hidden sm:inline">{t("inputHint")}</span>
+          {quota?.remaining != null && (
+            <span className={`ml-auto tabular-nums ${quota.remaining <= 5 ? "text-caramel" : ""}`}>
+              {t("quotaLeft", { n: quota.remaining })}
+            </span>
+          )}
+        </div>
       </div>
-      <p className="mx-auto mt-2 max-w-3xl text-center text-xs text-slate-400">
-        Enter で送信 / Shift+Enter で改行
-      </p>
     </div>
   );
 }

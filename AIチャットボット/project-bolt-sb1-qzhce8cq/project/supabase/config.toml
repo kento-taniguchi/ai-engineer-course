@@ -1,2 +1,14 @@
+project_id = "bseslcggxdkiatqqecid"
+
+# ログインの設定：手元の画面（5174番）から戻って来られるようにし、ゲスト（匿名）ログインを許可する
+[auth]
+site_url = "http://localhost:5174"
+additional_redirect_urls = ["http://localhost:5174", "http://localhost:5174/"]
+enable_anonymous_sign_ins = true
+
 [functions.dify-chat]
+verify_jwt = false
+
+# 新しい中継役：ログイン確認は中で自分で行う
+[functions.cafe-chat]
 verify_jwt = false

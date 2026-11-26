@@ -1,41 +1,60 @@
-import { Bot, Sparkles } from "lucide-react";
+import { MessageCircleQuestion } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+import type { Product, ShopStatus } from "@/types";
+import { CrowdBadge } from "@/components/CrowdBadge";
+import { PicksStrip } from "@/components/PicksStrip";
 
 interface EmptyStateProps {
   onSuggestionClick: (text: string) => void;
+  status: ShopStatus | null;
+  picks: Product[];
+  onReserve: (product: Product | null) => void;
 }
 
-const suggestions = [
-  "こんにちは！何ができますか？",
-  "このアプリの使い方を教えてください",
-  "面白い話題を提案してください",
-];
+export function EmptyState({ onSuggestionClick, status, picks, onReserve }: EmptyStateProps) {
+  const { t, dict } = useI18n();
 
-export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-4">
-      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-lg shadow-indigo-500/30">
-        <Bot size={32} className="text-white" />
+    <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-center gap-10 px-5 py-10">
+      <div className="flex flex-col items-center text-center">
+        <picture className="block h-20 w-20 overflow-hidden rounded-full shadow-lift ring-4 ring-surface">
+          <source srcSet="/images/login-pourover.webp" type="image/webp" />
+          <img src="/images/login-pourover.jpg" alt="" width={80} height={80} className="h-full w-full object-cover object-[center_30%]" />
+        </picture>
+        <p className="eyebrow mt-6">Hidamari Coffee</p>
+        <h1 className="mt-2 font-serif text-[28px] font-bold leading-tight tracking-wide text-ink sm:text-[32px]">
+          {t("appName")}
+          <span className="mt-1 block text-base font-medium text-muted">{t("assistant")}</span>
+        </h1>
+        <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">{t("tagline")}</p>
+        <div className="mt-4">
+          <CrowdBadge status={status} detailed />
+        </div>
       </div>
-      <h1 className="text-2xl font-bold text-slate-800">AIチャットボット</h1>
-      <p className="mt-2 text-center text-sm text-slate-500">
-        お気軽にメッセージを送ってください。<br />何でもお手伝いします。
-      </p>
 
-      <div className="mt-8 w-full max-w-md space-y-2">
-        <p className="flex items-center gap-1.5 text-xs font-medium text-slate-400">
-          <Sparkles size={14} />
-          おすすめの質問
-        </p>
-        {suggestions.map((s) => (
-          <button
-            key={s}
-            onClick={() => onSuggestionClick(s)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-left text-sm text-slate-700 transition-all hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 active:scale-[0.98]"
-          >
-            {s}
-          </button>
-        ))}
-      </div>
+      <PicksStrip picks={picks} onReserve={(p) => onReserve(p)} />
+
+      <section aria-labelledby="faq-title">
+        <h2 id="faq-title" className="mb-3 flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted">
+          <MessageCircleQuestion size={14} aria-hidden="true" />
+          {t("suggestionsTitle")}
+        </h2>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {dict.suggestions.map((s, i) => (
+            <button
+              key={s}
+              onClick={() => onSuggestionClick(s)}
+              className="group flex min-h-[56px] animate-rise cursor-pointer items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-4 py-3 text-left text-sm text-ink transition hover:border-caramel/50 hover:bg-caramel-soft active:scale-[0.99]"
+              style={{ animationDelay: `${i * 40}ms` }}
+            >
+              {s}
+              <span className="text-caramel opacity-0 transition group-hover:opacity-100" aria-hidden="true">
+                →
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
