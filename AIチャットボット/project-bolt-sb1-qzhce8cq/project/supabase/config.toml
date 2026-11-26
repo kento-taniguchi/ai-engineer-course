@@ -1,0 +1,2 @@
+[functions.dify-chat]
+verify_jwt = false
