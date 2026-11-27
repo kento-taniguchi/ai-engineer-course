@@ -2,7 +2,6 @@
 // データの保存先が Google スプレッドシートのとき、使える状態になるまで
 // 「ログイン → （初回だけ）スプレッドシートの準備 → 読み込み」の画面を出す門番
 import { useCallback, useEffect, useState } from "react";
-import { OFFICE } from "@/config";
 import {
   hasValidToken, isGoogleConfigured, loadGoogleIdentity, onAuthChange, signIn, wasConnected,
 } from "@/services/googleAuth";
@@ -151,7 +150,7 @@ function SheetsGate({ children }: { children: React.ReactNode }) {
 
 /** 初回：データ用のスプレッドシートを作る／URLで開く */
 function SetupSpreadsheet({ error, onOpen, onError }: { error?: string; onOpen: (id: string) => void; onError: (e: string) => void }) {
-  const [title, setTitle] = useState(`利用記録・請求書データ（${OFFICE.name}）`);
+  const [title, setTitle] = useState("利用記録・請求書データ");
   const [url, setUrl] = useState("");
   const [creating, setCreating] = useState(false);
 

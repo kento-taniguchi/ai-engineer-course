@@ -13,7 +13,10 @@ export const UNIT_PRICES: { from: string; prices: Record<CopayRatio, number> }[]
 /** 選べる負担割合 */
 export const COPAY_RATIOS: readonly CopayRatio[] = [1, 2, 3];
 
-/** 請求書に表示する事業所情報（試作版は架空） */
+/** アプリの名前（画面の上部・ブラウザのタブに表示） */
+export const APP_NAME = "利用記録・請求書ツール";
+
+/** 請求書に表示する事業所情報（試作版は架空。正式なひな形を入手したら本当の事業所情報にする） */
 export const OFFICE = {
   name: "ひだまりデイサービス（デモ）",
   address: "〒000-0000 架空県架空市1-2-3",

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { OFFICE } from "@/config";
+import { APP_NAME, OFFICE } from "@/config";
 import { GoogleGate } from "./GoogleGate";
 import { confirmLeave } from "./unsaved";
 
@@ -19,7 +19,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header className="topbar">
         <div className="topbar-inner">
           <span className="brand">
-            {OFFICE.name}
+            {APP_NAME}
             {OFFICE.isDemo && <span className="demo-badge">試作版</span>}
           </span>
           <nav className="nav">

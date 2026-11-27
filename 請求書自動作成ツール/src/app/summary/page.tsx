@@ -7,7 +7,6 @@ import { summarizeMonth, yen, type MonthSummary } from "@/lib/billing";
 import { addMonths, daysInMonth, formatDateShort, formatMonth, monthOf, parseKey, todayKey, weekdayOf } from "@/lib/dates";
 import { buildSpreadsheetRequest } from "@/lib/googleSheets";
 import { createSpreadsheet, isGoogleConfigured, loadGoogleIdentity } from "@/services/googleSheetsExport";
-import { OFFICE } from "@/config";
 import { getRepository } from "@/services/repository";
 
 const repo = getRepository();
@@ -58,7 +57,7 @@ export default function SummaryPage() {
     setSheetState({ kind: "saving" });
     try {
       const request = buildSpreadsheetRequest(buildAttendanceSheet(summary), {
-        fileTitle: `${fileBase}（${OFFICE.name}）`,
+        fileTitle: fileBase,
         sheetTitle: formatMonth(ym),
       });
       const url = await createSpreadsheet(request);
