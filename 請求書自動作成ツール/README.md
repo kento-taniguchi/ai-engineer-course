@@ -189,4 +189,4 @@ scripts/check-logic.mts     自動チェック
 - 入力の締切・確定（締めた月を修正できなくする等）
 - 会員の削除（誤登録は「退会」で対応。記録を残すため削除機能は付けていません）
 
-開発の詳細：[docs/Google連携の準備.md](docs/Google連携の準備.md)
+本番の設定と当日の進め方：[docs/本番用Google設定の手順.md](docs/本番用Google設定の手順.md)・[docs/当日の進行表.md](docs/当日の進行表.md)
