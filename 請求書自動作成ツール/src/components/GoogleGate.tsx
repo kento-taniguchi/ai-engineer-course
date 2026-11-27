@@ -3,7 +3,7 @@
 // 「ログイン → （初回だけ）スプレッドシートの準備 → 読み込み」の画面を出す門番
 import { useCallback, useEffect, useState } from "react";
 import {
-  hasValidToken, isGoogleConfigured, loadGoogleIdentity, onAuthChange, signIn, wasConnected,
+  hasValidToken, isGoogleConfigured, loadGoogleIdentity, onAuthChange, signIn, startAutoReconnect, wasConnected,
 } from "@/services/googleAuth";
 import { DATA_BACKEND } from "@/services/repository";
 import {
@@ -30,6 +30,9 @@ function SheetsGate({ children }: { children: React.ReactNode }) {
   const [step, setStep] = useState<Step>({ kind: "preparing" });
   const [connected, setConnected] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  // 接続が切れた後にボタンが押されたら、自動で再接続する
+  useEffect(() => startAutoReconnect(), []);
 
   // 接続の状態（期限切れなど）を見張る
   useEffect(() => {
@@ -90,7 +93,7 @@ function SheetsGate({ children }: { children: React.ReactNode }) {
       <>
         {!connected && (
           <div className="reconnect-bar" role="alert">
-            <span>Google との接続が切れました（約1時間で切れます）。保存する前に再接続してください。入力中の内容は消えません。</span>
+            <span>Google との接続が切れました（約1時間で切れます）。「保存」を押すと自動でつなぎ直します。入力中の内容は消えません。</span>
             <button className="btn btn-small btn-primary" onClick={onSignIn} disabled={busy}>
               再接続
             </button>
@@ -108,7 +111,7 @@ function SheetsGate({ children }: { children: React.ReactNode }) {
       {step.kind === "signin" && (
         <>
           <h1>{wasConnected() ? "Google に再接続してください" : "Google でログインしてください"}</h1>
-          <p>出欠・会員のデータは、Google ドライブのスプレッドシートに保存します。使う前に、データを保存する Google アカウントでログインしてください。</p>
+          <p>出欠・会員のデータは、Google ドライブのスプレッドシートに保存します。下のボタンを押してください（2回目からは、パスワードの入力は通常いりません）。</p>
           {step.error && <p className="gate-error">{step.error}</p>}
           <button className="btn btn-primary" onClick={onSignIn} disabled={busy}>
             {busy ? "ログイン中…" : "Google でログイン"}

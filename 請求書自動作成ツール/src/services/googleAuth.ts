@@ -1,7 +1,7 @@
 // Google へのログイン（通行証＝アクセストークンの受け取り）と、Google への依頼の送信
 // - ログインと許可は Google Identity Services（Google 公式の部品）で行います
 // - 許可の範囲は drive.file：「このアプリが作ったファイルだけ」を読み書きできる、いちばん狭い権限です
-// - 通行証はメモリの中だけに置き、保存しません（約1時間で切れます）
+// - 通行証はメモリの中だけに置き、保存しません（約1時間で切れます。切れた後にボタンを押すと自動で再接続します）
 // ※ ブラウザの画面からだけ使います
 
 /** Google Cloud で作った「OAuth クライアントID」（.env.local の NEXT_PUBLIC_GOOGLE_CLIENT_ID） */
@@ -61,6 +61,8 @@ export function loadGoogleIdentity(): Promise<void> {
 
 let token: { value: string; expiresAt: number } | null = null;
 let everConnected = false;
+/** Google の画面が開いている途中のログイン（終わるまで、Google への依頼は待つ） */
+let pendingSignIn: Promise<void> | null = null;
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((f) => f());
 
@@ -87,9 +89,11 @@ export function dropToken() {
  * ※ ボタンを押したときの処理の中で、待たずにすぐ呼んでください（ポップアップがブロックされないように）
  */
 export function signIn(): Promise<void> {
+  // すでに Google の画面が開いている途中なら、同じものを待つ（画面が2つ開かないように）
+  if (pendingSignIn) return pendingSignIn;
   const oauth2 = window.google?.accounts?.oauth2;
   if (!oauth2) return Promise.reject(new GoogleError("Google のログイン部品の準備ができていません。少し待ってからもう一度押してください。"));
-  return new Promise<void>((resolve, reject) => {
+  const p = new Promise<void>((resolve, reject) => {
     const client = oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
       scope: SCOPE,
@@ -111,8 +115,32 @@ export function signIn(): Promise<void> {
         reject(new GoogleError(msg));
       },
     });
-    client.requestAccessToken(everConnected ? { prompt: "" } : undefined);
+    // prompt: "" … 許可の画面は最初の1回だけ。2回目からは Google の画面が一瞬開いて自動で閉じる
+    client.requestAccessToken({ prompt: "" });
   });
+  pendingSignIn = p;
+  p.then(
+    () => { pendingSignIn = null; },
+    () => { pendingSignIn = null; },
+  );
+  return p;
+}
+
+/**
+ * 接続が切れているときに画面のボタンが押されたら、その場で自動的に再接続する。
+ * （ボタンを押した瞬間でないと Google の画面がブロックされるため、押した瞬間を見張る）
+ * 戻り値を呼ぶと見張りをやめる。
+ */
+export function startAutoReconnect(): () => void {
+  const onClick = (e: MouseEvent) => {
+    if (!everConnected || hasValidToken() || pendingSignIn) return;
+    if (!(e.target instanceof Element) || !e.target.closest("button")) return;
+    signIn().catch(() => {
+      /* 失敗は、待っていた依頼の側で「再接続してください」と表示する */
+    });
+  };
+  document.addEventListener("click", onClick, true); // ボタン自身の処理より先に動かす
+  return () => document.removeEventListener("click", onClick, true);
 }
 
 // ---- Google への依頼 ----
@@ -138,6 +166,7 @@ async function explainError(res: Response): Promise<GoogleError> {
 /** 通行証を付けて Google に依頼を送り、返ってきた JSON を返す */
 export async function googleFetch<T = unknown>(url: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
   if (!isGoogleConfigured()) throw new GoogleError("Google 連携の設定（クライアントID）がまだありません。");
+  if (!hasValidToken() && pendingSignIn) await pendingSignIn.catch(() => {}); // 自動の再接続が終わるのを待つ
   if (!hasValidToken()) {
     dropToken();
     throw new GoogleError("Google の接続の有効期限が切れました。画面上の「再接続」を押してください。", true);
