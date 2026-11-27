@@ -1,9 +1,10 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  absentRows, addableMembers, buildDayRows, countStatuses, draftFromRecord, isDirty, markAllPresent, statusOf, toRecord,
-  type Draft,
+  absentRows, addableMembers, buildDayRows, countStatuses, draftFromRecord, groupBySlot, isDirty, markAllPresent, statusOf,
+  toRecord, type DayRow, type Draft,
 } from "@/lib/attendance";
+import { TIME_SLOT_ORDER, TIME_SLOTS } from "@/config";
 import { formatDateLong, formatDateTime, isDateKey, todayKey } from "@/lib/dates";
 import type { AttendanceStatus, DayRecord, Member } from "@/lib/types";
 import { getRepository } from "@/services/repository";
@@ -21,7 +22,8 @@ export default function AttendancePage() {
   const [extras, setExtras] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [addId, setAddId] = useState("");
-  const [confirmAll, setConfirmAll] = useState(false);
+  /** 「全員利用」で欠席の方がいたときの確認（対象の行） */
+  const [confirmAll, setConfirmAll] = useState<DayRow[] | null>(null);
   const [toast, setToast] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -45,6 +47,7 @@ export default function AttendancePage() {
   const addable = useMemo(() => (date ? addableMembers(members, rows, date) : []), [members, rows, date]);
   const dirty = !loading && isDirty(saved, rows, draft);
   const counts = countStatuses(rows, draft);
+  const groups = useMemo(() => groupBySlot(rows, date, TIME_SLOT_ORDER), [rows, date]);
 
   useEffect(() => {
     setUnsaved(dirty);
@@ -75,9 +78,10 @@ export default function AttendancePage() {
     setDraft((cur) => ({ ...cur, [memberId]: statusOf(cur, memberId) === s ? "unconfirmed" : s }));
   };
 
-  const onAllPresent = () => {
-    if (absentRows(draft, rows).length > 0) setConfirmAll(true);
-    else setDraft((cur) => markAllPresent(cur, rows, false));
+  /** target：対象の行（全員、または午前・午後のどちらか） */
+  const onAllPresent = (target: DayRow[]) => {
+    if (absentRows(draft, target).length > 0) setConfirmAll(target);
+    else setDraft((cur) => markAllPresent(cur, target, false));
   };
 
   const addMember = () => {
@@ -110,7 +114,7 @@ export default function AttendancePage() {
     }
   };
 
-  const absent = absentRows(draft, rows);
+  const absent = confirmAll ? absentRows(draft, confirmAll) : [];
 
   return (
     <>
@@ -128,7 +132,7 @@ export default function AttendancePage() {
       {!loading && (
         <>
           <div className="toolbar">
-            <button className="btn btn-primary" onClick={onAllPresent} disabled={rows.length === 0}>
+            <button className="btn btn-primary" onClick={() => onAllPresent(rows)} disabled={rows.length === 0}>
               全員利用
             </button>
             <div className="counts" aria-live="polite">
@@ -155,45 +159,67 @@ export default function AttendancePage() {
           {rows.length === 0 ? (
             <div className="card empty">この日の利用予定者はいません。振替・追加の会員を選んで追加できます。</div>
           ) : (
-            <ul className="att-list">
-              {rows.map((r) => {
-                const s = statusOf(draft, r.member.id);
-                const unsavedExtra = extras.includes(r.member.id);
-                return (
-                  <li key={r.member.id} className="att-row">
-                    <div className="att-name">
-                      <span className="name">{r.member.name}</span>
-                      {r.added && <span className="tag">追加</span>}
-                      <div className="sub">
-                        {r.member.id}
-                        {unsavedExtra && (
-                          <button className="remove-btn" onClick={() => removeExtra(r.member.id)}>
-                            追加を取り消す
+            groups.map((g) => {
+              const c = countStatuses(g.rows, draft);
+              return (
+                <section key={g.slot} className="slot-group">
+                  <div className="slot-head">
+                    <h2>
+                      {TIME_SLOTS[g.slot].label}
+                      <span className="slot-time">{TIME_SLOTS[g.slot].time}</span>
+                    </h2>
+                    <span className="muted small">
+                      {g.rows.length}名（利用 {c.present}・欠席 {c.absent}・未確認 {c.unconfirmed}）
+                    </span>
+                    <div className="spacer" />
+                    {groups.length > 1 && (
+                      <button className="btn btn-small" onClick={() => onAllPresent(g.rows)}>
+                        {TIME_SLOTS[g.slot].label}を全員利用
+                      </button>
+                    )}
+                  </div>
+                <ul className="att-list">
+                  {g.rows.map((r) => {
+                    const s = statusOf(draft, r.member.id);
+                    const unsavedExtra = extras.includes(r.member.id);
+                    return (
+                      <li key={r.member.id} className="att-row">
+                        <div className="att-name">
+                          <span className="name">{r.member.name}</span>
+                          {r.added && <span className="tag">追加</span>}
+                          <div className="sub">
+                            {r.member.id}
+                            {unsavedExtra && (
+                              <button className="remove-btn" onClick={() => removeExtra(r.member.id)}>
+                                追加を取り消す
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <span className={`state-label ${s}`}>{STATUS_TEXT[s]}</span>
+                        <div className="seg" role="group" aria-label={`${r.member.name}の出欠`}>
+                          <button
+                            className={s === "present" ? "on-present" : ""}
+                            aria-pressed={s === "present"}
+                            onClick={() => choose(r.member.id, "present")}
+                          >
+                            {s === "present" ? "✓ 利用" : "利用"}
                           </button>
-                        )}
-                      </div>
-                    </div>
-                    <span className={`state-label ${s}`}>{STATUS_TEXT[s]}</span>
-                    <div className="seg" role="group" aria-label={`${r.member.name}の出欠`}>
-                      <button
-                        className={s === "present" ? "on-present" : ""}
-                        aria-pressed={s === "present"}
-                        onClick={() => choose(r.member.id, "present")}
-                      >
-                        {s === "present" ? "✓ 利用" : "利用"}
-                      </button>
-                      <button
-                        className={s === "absent" ? "on-absent" : ""}
-                        aria-pressed={s === "absent"}
-                        onClick={() => choose(r.member.id, "absent")}
-                      >
-                        {s === "absent" ? "✓ 欠席" : "欠席"}
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+                          <button
+                            className={s === "absent" ? "on-absent" : ""}
+                            aria-pressed={s === "absent"}
+                            onClick={() => choose(r.member.id, "absent")}
+                          >
+                            {s === "absent" ? "✓ 欠席" : "欠席"}
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+                </section>
+              );
+            })
           )}
 
           <div className="save-bar">
@@ -224,8 +250,8 @@ export default function AttendancePage() {
               <button
                 className="btn btn-primary"
                 onClick={() => {
-                  setDraft((cur) => markAllPresent(cur, rows, false));
-                  setConfirmAll(false);
+                  setDraft((cur) => markAllPresent(cur, confirmAll, false));
+                  setConfirmAll(null);
                 }}
               >
                 欠席の方はそのまま、他を利用にする
@@ -233,13 +259,13 @@ export default function AttendancePage() {
               <button
                 className="btn"
                 onClick={() => {
-                  setDraft((cur) => markAllPresent(cur, rows, true));
-                  setConfirmAll(false);
+                  setDraft((cur) => markAllPresent(cur, confirmAll, true));
+                  setConfirmAll(null);
                 }}
               >
                 欠席の方も含めて全員利用にする
               </button>
-              <button className="btn" onClick={() => setConfirmAll(false)}>
+              <button className="btn" onClick={() => setConfirmAll(null)}>
                 やめる
               </button>
             </div>

@@ -5,3 +5,8 @@ next-env.d.ts
 *.tsbuildinfo
 .env*
 !.env.example
+
+# 個人情報（利用者名簿など）は絶対に GitHub に送らない
+個人情報/
+*名簿*
+*バックアップ*.json

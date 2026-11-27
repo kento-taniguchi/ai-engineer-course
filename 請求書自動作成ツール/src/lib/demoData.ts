@@ -56,7 +56,8 @@ export function createDemoData(now: Date = new Date()): { members: Member[]; day
     id: `M${String(i + 1).padStart(4, "0")}`,
     name,
     kana,
-    schedules: [{ from: "2020-04-01", weekdays }],
+    // 時間帯：3人に1人を午後にする
+    schedules: [{ from: "2020-04-01", weekdays, slot: i % 3 === 2 ? "pm" : "am" }],
     copays: [{ from: "2020-04", ratio: 1 }],
     withdrawnOn: null,
     createdAt: nowIso,
@@ -65,7 +66,7 @@ export function createDemoData(now: Date = new Date()): { members: Member[]; day
 
   // 曜日変更の例：西田 静子さん 今月1日から「月」→「火・木」
   const nishida = members.find((m) => m.name === "西田 静子")!;
-  nishida.schedules.push({ from: `${thisMonth}-01`, weekdays: [2, 4] });
+  nishida.schedules.push({ from: `${thisMonth}-01`, weekdays: [2, 4], slot: nishida.schedules[0].slot });
   // 介護保険の負担割合：2割・3割の例
   const setRatio = (name: string, ratio: CopayRatio) => {
     members.find((m) => m.name === name)!.copays = [{ from: "2020-04", ratio }];

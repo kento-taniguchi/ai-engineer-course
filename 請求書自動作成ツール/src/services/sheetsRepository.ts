@@ -60,13 +60,34 @@ type ValueRange = { range: string; values?: unknown[][] };
 
 /** スプレッドシートを読み込んで使えるようにする */
 export async function connectSpreadsheet(id: string): Promise<void> {
-  const meta = await googleFetch<{ sheets: { properties: { sheetId: number; title: string; gridProperties?: { rowCount?: number } } }[] }>(
-    `${API}/${enc(id)}?fields=${enc("sheets.properties(sheetId,title,gridProperties.rowCount)")}`,
-  );
+  const meta = await googleFetch<{
+    sheets: { properties: { sheetId: number; title: string; gridProperties?: { rowCount?: number; columnCount?: number } } }[];
+  }>(`${API}/${enc(id)}?fields=${enc("sheets.properties(sheetId,title,gridProperties(rowCount,columnCount))")}`);
   const byTitle = new Map(meta.sheets.map((s) => [s.properties.title, s.properties]));
   const missing = [SHEET.info, ...DATA_SHEETS].filter((t) => !byTitle.has(t));
   if (missing.length)
     throw new GoogleError(`このスプレッドシートは、このアプリのデータ用ではないようです（「${missing.join("」「")}」シートがありません）。`);
+
+  // 後から増えた列（例：利用曜日シートの「時間帯」）がない古いスプレッドシートは、列と見出しを足す
+  const narrow = DATA_SHEETS.filter((s) => (byTitle.get(s)!.gridProperties?.columnCount ?? 0) < HEADERS[s].length);
+  if (narrow.length) {
+    await googleFetch(`${API}/${enc(id)}:batchUpdate`, {
+      method: "POST",
+      body: {
+        requests: narrow.map((s) => ({
+          appendDimension: {
+            sheetId: byTitle.get(s)!.sheetId,
+            dimension: "COLUMNS",
+            length: HEADERS[s].length - (byTitle.get(s)!.gridProperties?.columnCount ?? 0),
+          },
+        })),
+      },
+    });
+    await googleFetch(`${API}/${enc(id)}/values:batchUpdate`, {
+      method: "POST",
+      body: { valueInputOption: "RAW", data: narrow.map((s) => ({ range: `'${s}'!A1:${lastCol(s)}1`, values: [HEADERS[s]] })) },
+    });
+  }
 
   const ranges = [a1(SHEET.info, 1, "A", 5, "B"), ...DATA_SHEETS.map((s) => `'${s}'!A2:${lastCol(s)}`)];
   const got = await googleFetch<{ valueRanges: ValueRange[] }>(

@@ -1,9 +1,9 @@
 // ロジックの自動チェック（npm run check）。架空データのみ使用。
-import { buildDayRows, draftFromRecord, isDirty, markAllPresent, absentRows, toRecord, addableMembers, statusOf } from "../src/lib/attendance";
+import { buildDayRows, groupBySlot, draftFromRecord, isDirty, markAllPresent, absentRows, toRecord, addableMembers, statusOf } from "../src/lib/attendance";
 import { summarizeMonth, unitPriceFor } from "../src/lib/billing";
 import { createDemoData } from "../src/lib/demoData";
 import { weekdayOf, daysInMonth, addMonths } from "../src/lib/dates";
-import { changeSchedule, createMember, nextMemberId, restoreMember, withdrawMember, isScheduledOn, changeCopay, copayRatioFor, normalizeMember } from "../src/lib/members";
+import { changeSchedule, createMember, nextMemberId, restoreMember, withdrawMember, isScheduledOn, changeCopay, copayRatioFor, normalizeMember, currentSlot } from "../src/lib/members";
 import { buildAttendanceSheet, toCsv, MARK } from "../src/lib/attendanceSheet";
 import { buildSpreadsheetRequest } from "../src/lib/googleSheets";
 import { a1, buildDataSpreadsheetRequest, daysToRows, infoRows, isAppInfo, membersToRows, planWrite, rowsToDays, rowsToMembers, textToWeekdays } from "../src/lib/sheetsFormat";
@@ -238,6 +238,32 @@ console.log("\n11. Googleスプレッドシートへの保存（行への変換�
   const createReq = buildDataSpreadsheetRequest("テスト", T);
   ok(createReq.sheets.map((x) => x.properties.title).join() === "情報,会員,利用曜日,負担割合,出欠", "新しいスプレッドシート：5つのシート");
   ok(isAppInfo(infoRows(T)) && !isAppInfo([["アプリ", "ほかのアプリ"]]), "情報シートで、このアプリのデータか確かめる");
+}
+
+console.log("\n12. 時間帯（午前・午後）");
+{
+  const am = createMember([], { name: "架空 午前", weekdays: [1], from: "2026-11-01" }, T);
+  const pm = createMember([am], { name: "架空 午後", weekdays: [1, 4], from: "2026-11-01", slot: "pm" }, T);
+  ok(currentSlot(am, "2026-11-02") === "am" && currentSlot(pm, "2026-11-02") === "pm", "登録時に時間帯を選べる（省略すると午前）");
+  const pm2 = changeSchedule(pm, [1, 4], "2026-12-01", T, "am");
+  ok(currentSlot(pm2, "2026-11-30") === "pm" && currentSlot(pm2, "2026-12-01") === "am", "時間帯の変更は「この日から」。前の日は午後のまま");
+  ok(currentSlot(changeSchedule(pm, [2], "2026-12-01", T), "2026-12-01") === "pm", "曜日だけ変えたときは時間帯はそのまま");
+  const rows = buildDayRows([am, pm], "2026-11-02", null);
+  const g = groupBySlot(rows, "2026-11-02", ["am", "pm"]);
+  ok(g.length === 2 && g[0].slot === "am" && g[0].rows[0].member.id === am.id && g[1].rows[0].member.id === pm.id, "出欠の一覧は午前→午後に分かれる");
+  ok(groupBySlot(buildDayRows([am, pm], "2026-11-05", null), "2026-11-05", ["am", "pm"]).map((x) => x.slot).join() === "pm", "だれもいない時間帯は出さない");
+  const d = markAllPresent({}, g[1].rows, false);
+  ok(statusOf(d, pm.id) === "present" && statusOf(d, am.id) === "unconfirmed", "「午後を全員利用」は午前の方を変えない");
+  const mr = membersToRows([am, pm2]);
+  ok(mr["利用曜日"].map((r) => r[3]).join() === "午前,午後,午前", "利用曜日シートに「時間帯」の列（午前・午後）");
+  const back = rowsToMembers(mr["会員"], mr["利用曜日"], mr["負担割合"]);
+  ok(JSON.stringify(back) === JSON.stringify([am, pm2]), "時間帯も行にして戻すと元と同じ");
+  ok(rowsToMembers([["M0001", "架空", "", "", T, T]], [["M0001", "2026-01-01", "月"]], [])[0].schedules[0].slot === "am", "時間帯の列ができる前の行（空欄）は午前");
+  let msg = "";
+  try { rowsToMembers([["M0001", "架空", "", "", T, T]], [["M0001", "2026-01-01", "月", "夜"]], []); } catch (e) { msg = String(e); }
+  ok(msg.includes("時間帯「夜」"), "読めない時間帯は知らせる");
+  const old = normalizeMember({ ...am, schedules: [{ from: "2026-01-01", weekdays: [1] }] } as unknown as Member);
+  ok(old.schedules[0].slot === "am", "古いバックアップ（時間帯なし）は午前として読む");
 }
 
 console.log(failed ? `\n✗ ${failed}件 失敗` : "\nすべて成功");

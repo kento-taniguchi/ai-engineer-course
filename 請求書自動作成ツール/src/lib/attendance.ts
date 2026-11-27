@@ -1,6 +1,6 @@
 // 出欠の記録（画面や保存先に依存しない処理）
-import { compareMembers, isScheduledOn } from "./members";
-import type { AttendanceStatus, DateKey, DayEntry, DayRecord, Member } from "./types";
+import { compareMembers, currentSlot, isScheduledOn } from "./members";
+import type { AttendanceStatus, DateKey, DayEntry, DayRecord, Member, TimeSlot } from "./types";
 
 export type DayRow = {
   member: Member;
@@ -32,6 +32,13 @@ export function buildDayRows(members: Member[], date: DateKey, saved: DayRecord 
     rows.set(id, { member: m, scheduled: false, added: true });
   }
   return [...rows.values()].sort((a, b) => compareMembers(a.member, b.member));
+}
+
+/** 時間帯ごとに分ける（午前 → 午後の順。だれもいない時間帯は出さない） */
+export function groupBySlot(rows: DayRow[], date: DateKey, order: readonly TimeSlot[]): { slot: TimeSlot; rows: DayRow[] }[] {
+  return order
+    .map((slot) => ({ slot, rows: rows.filter((r) => currentSlot(r.member, date) === slot) }))
+    .filter((g) => g.rows.length > 0);
 }
 
 /** 追加できる会員（その日の一覧にいない、退会していない会員） */

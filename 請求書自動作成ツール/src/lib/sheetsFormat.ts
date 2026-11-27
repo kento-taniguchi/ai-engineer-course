@@ -1,10 +1,10 @@
 // アプリのデータ（会員・出欠）と、Google スプレッドシートの「行」を行き来させる変換
 // Google とは通信しません（通信は src/services/sheetsRepository.ts）。
 // 人が開いても読めるよう、曜日は「月,水」、状態は「利用／欠席／未確認」のように書きます。
-import { WEEKDAY_LABELS } from "@/config";
+import { TIME_SLOTS, WEEKDAY_LABELS } from "@/config";
 import { isDateKey, isMonthKey } from "./dates";
 import { isCopayRatio } from "./members";
-import type { AttendanceStatus, DayRecord, Member } from "./types";
+import type { AttendanceStatus, DayRecord, Member, TimeSlot } from "./types";
 
 export const APP_ID = "attendance-invoice";
 export const FORMAT_VERSION = 1;
@@ -22,7 +22,7 @@ export type DataSheet = Exclude<(typeof SHEET)[keyof typeof SHEET], "情報">;
 /** 各シートの見出し（1行目） */
 export const HEADERS: Record<DataSheet, string[]> = {
   会員: ["会員ID", "氏名", "ふりがな", "退会日", "作成日時", "更新日時"],
-  利用曜日: ["会員ID", "開始日", "曜日"],
+  利用曜日: ["会員ID", "開始日", "曜日", "時間帯"],
   負担割合: ["会員ID", "適用開始月", "割合（1〜3割）"],
   出欠: ["日付", "会員ID", "氏名（確認用）", "状態", "追加", "保存日時"],
 };
@@ -33,6 +33,14 @@ export type Rows = Cell[][];
 const STATUS_TO_TEXT: Record<AttendanceStatus, string> = { present: "利用", absent: "欠席", unconfirmed: "未確認" };
 const TEXT_TO_STATUS: Record<string, AttendanceStatus> = { 利用: "present", 欠席: "absent", 未確認: "unconfirmed" };
 const ADDED_TEXT = "追加";
+
+const slotToText = (slot: TimeSlot) => TIME_SLOTS[slot].label;
+/** 「午前／午後」を読む。空欄（時間帯の列ができる前のデータ）は午前 */
+function textToSlot(text: string): TimeSlot | null {
+  if (text === "") return "am";
+  const hit = (Object.keys(TIME_SLOTS) as TimeSlot[]).find((k) => TIME_SLOTS[k].label === text);
+  return hit ?? null;
+}
 
 export const weekdaysToText = (w: number[]) => w.map((n) => WEEKDAY_LABELS[n]).join(",");
 
@@ -68,7 +76,7 @@ export function membersToRows(members: Member[]): Record<"会員" | "利用曜�
   return {
     会員: sorted.map((m) => [m.id, m.name, m.kana, m.withdrawnOn ?? "", m.createdAt, m.updatedAt]),
     利用曜日: sorted.flatMap((m) =>
-      [...m.schedules].sort((a, b) => a.from.localeCompare(b.from)).map((s) => [m.id, s.from, weekdaysToText(s.weekdays)]),
+      [...m.schedules].sort((a, b) => a.from.localeCompare(b.from)).map((s) => [m.id, s.from, weekdaysToText(s.weekdays), slotToText(s.slot ?? "am")]),
     ),
     負担割合: sorted.flatMap((m) =>
       [...m.copays].sort((a, b) => a.from.localeCompare(b.from)).map((c) => [m.id, c.from, c.ratio]),
@@ -97,13 +105,15 @@ export function rowsToMembers(memberRows: unknown[][], scheduleRows: unknown[][]
   });
   scheduleRows.forEach((r, i) => {
     if (isBlank(r)) return;
-    const [id, from, text] = r.map(str);
+    const [id, from, text, slotText = ""] = r.map(str);
     const m = byId.get(id);
     const weekdays = textToWeekdays(text);
+    const slot = textToSlot(slotText);
     if (!m) return void errors.push(`利用曜日シートの${rowNo(i)}行目：会員ID「${id}」が会員シートにありません`);
     if (!isDateKey(from)) return void errors.push(`利用曜日シートの${rowNo(i)}行目：開始日「${from}」が読めません（例：2026-11-20）`);
     if (!weekdays) return void errors.push(`利用曜日シートの${rowNo(i)}行目：曜日「${text}」が読めません（例：月,水）`);
-    m.schedules.push({ from, weekdays });
+    if (!slot) return void errors.push(`利用曜日シートの${rowNo(i)}行目：時間帯「${slotText}」が読めません（午前・午後のどちらか）`);
+    m.schedules.push({ from, weekdays, slot });
   });
   copayRows.forEach((r, i) => {
     if (isBlank(r)) return;
@@ -186,7 +196,7 @@ const HEADER_FORMAT = {
 };
 const COLUMN_WIDTHS: Record<DataSheet, number[]> = {
   会員: [80, 120, 140, 100, 190, 190],
-  利用曜日: [80, 100, 120],
+  利用曜日: [80, 100, 120, 70],
   負担割合: [80, 100, 110],
   出欠: [100, 80, 120, 70, 60, 190],
 };

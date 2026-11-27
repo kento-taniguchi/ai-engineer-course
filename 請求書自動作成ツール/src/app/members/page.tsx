@@ -1,18 +1,19 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { COPAY_RATIOS, WEEKDAY_LABELS, WEEKDAY_ORDER } from "@/config";
+import { COPAY_RATIOS, TIME_SLOT_ORDER, TIME_SLOTS, WEEKDAY_LABELS, WEEKDAY_ORDER } from "@/config";
 import { unitPriceFor, yen } from "@/lib/billing";
 import { formatDateLong, formatMonth, isDateKey, isMonthKey, monthOf, todayKey } from "@/lib/dates";
 import {
-  changeCopay, changeSchedule, compareMembers, copayRatioFor, createMember, currentWeekdays, isWithdrawnOn, renameMember,
+  changeCopay, changeSchedule, compareMembers, copayRatioFor, createMember, currentSlot, currentWeekdays, isWithdrawnOn, renameMember,
   restoreMember, upcomingCopays, upcomingSchedules, withdrawMember,
 } from "@/lib/members";
-import type { CopayRatio, Member } from "@/lib/types";
+import type { CopayRatio, Member, TimeSlot } from "@/lib/types";
 import { getRepository } from "@/services/repository";
 import { currentSpreadsheetId, spreadsheetUrl } from "@/services/sheetsRepository";
 
 const repo = getRepository();
 const wdText = (w: number[]) => [...w].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map((n) => WEEKDAY_LABELS[n]).join("・");
+const slotText = (slot: TimeSlot | undefined) => TIME_SLOTS[slot ?? "am"].label;
 
 export default function MembersPage() {
   const [members, setMembers] = useState<Member[] | null>(null);
@@ -89,6 +90,7 @@ export default function MembersPage() {
             <tr>
               <th>氏名</th>
               <th>利用曜日</th>
+              <th>時間帯</th>
               <th>負担割合</th>
               <th>状態</th>
               <th></th>
@@ -108,9 +110,13 @@ export default function MembersPage() {
                     {wdText(currentWeekdays(m, today))}
                     {up.map((s) => (
                       <div key={s.from} className="small muted">
-                        {formatDateLong(s.from)}から {wdText(s.weekdays)}
+                        {formatDateLong(s.from)}から {wdText(s.weekdays)}（{slotText(s.slot)}）
                       </div>
                     ))}
+                  </td>
+                  <td>
+                    {slotText(currentSlot(m, today))}
+                    <div className="small muted">{TIME_SLOTS[currentSlot(m, today)].time}</div>
                   </td>
                   <td>
                     {copayRatioFor(m, monthOf(today))}割
@@ -166,6 +172,20 @@ function WeekdayPicker({ value, onChange }: { value: number[]; onChange: (v: num
   );
 }
 
+/** 時間帯（午前・午後）を選ぶボタン */
+function SlotPicker({ value, onChange }: { value: TimeSlot; onChange: (v: TimeSlot) => void }) {
+  return (
+    <div className="ratio-picker" role="group" aria-label="時間帯">
+      {TIME_SLOT_ORDER.map((k) => (
+        <button key={k} type="button" aria-pressed={value === k} onClick={() => onChange(k)}>
+          {TIME_SLOTS[k].label}
+          <span className="price">{TIME_SLOTS[k].time}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** 介護保険の負担割合を選ぶボタン（1回あたりの金額も表示） */
 function RatioPicker({ value, onChange, ym }: { value: CopayRatio; onChange: (v: CopayRatio) => void; ym: string }) {
   return (
@@ -184,18 +204,19 @@ function NewMemberForm({
   onSave,
 }: {
   onCancel: () => void;
-  onSave: (input: { name: string; kana: string; weekdays: number[]; from: string; copayRatio: CopayRatio }) => Promise<void>;
+  onSave: (input: { name: string; kana: string; weekdays: number[]; from: string; copayRatio: CopayRatio; slot: TimeSlot }) => Promise<void>;
 }) {
   const [name, setName] = useState("");
   const [copayRatio, setCopayRatio] = useState<CopayRatio>(1);
   const [kana, setKana] = useState("");
   const [weekdays, setWeekdays] = useState<number[]>([]);
+  const [slot, setSlot] = useState<TimeSlot>("am");
   const [from, setFrom] = useState(todayKey());
   const [error, setError] = useState("");
   const submit = async () => {
     try {
       if (!isDateKey(from)) throw new Error("利用開始日を選んでください");
-      await onSave({ name, kana, weekdays, from, copayRatio });
+      await onSave({ name, kana, weekdays, from, copayRatio, slot });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
@@ -216,6 +237,10 @@ function NewMemberForm({
       <div style={{ marginTop: 12 }}>
         <span className="label">利用曜日</span>
         <WeekdayPicker value={weekdays} onChange={setWeekdays} />
+      </div>
+      <div style={{ marginTop: 12 }}>
+        <span className="label">時間帯</span>
+        <SlotPicker value={slot} onChange={setSlot} />
       </div>
       <div style={{ marginTop: 12 }}>
         <span className="label">介護保険の負担割合</span>
@@ -248,6 +273,7 @@ function EditMember({
   const [name, setName] = useState(m.name);
   const [kana, setKana] = useState(m.kana);
   const [weekdays, setWeekdays] = useState<number[]>(currentWeekdays(m, today));
+  const [slot, setSlot] = useState<TimeSlot>(currentSlot(m, today));
   const [from, setFrom] = useState(today);
   const [withdrawOn, setWithdrawOn] = useState(today);
   const thisMonth = monthOf(today);
@@ -300,11 +326,15 @@ function EditMember({
       </div>
 
       <div className="card section">
-        <h2>利用曜日の変更</h2>
+        <h2>利用曜日・時間帯の変更</h2>
         <div className="small muted" style={{ marginBottom: 8 }}>
-          現在：{wdText(currentWeekdays(m, today))}
+          現在：{wdText(currentWeekdays(m, today))}（{slotText(currentSlot(m, today))}）
         </div>
         <WeekdayPicker value={weekdays} onChange={setWeekdays} />
+        <div style={{ marginTop: 12 }}>
+          <span className="label">時間帯</span>
+          <SlotPicker value={slot} onChange={setSlot} />
+        </div>
         <div style={{ marginTop: 12, maxWidth: 240 }}>
           <label className="label" htmlFor="efr">この日から変更</label>
           <input id="efr" type="date" className="input" value={from} onChange={(e) => setFrom(e.target.value)} />
@@ -317,11 +347,14 @@ function EditMember({
                 if (!isDateKey(from)) throw new Error("変更する日を選んでください");
                 const later = m.schedules.filter((s) => s.from > from);
                 if (later.length && !window.confirm(`${later.map((s) => formatDateLong(s.from)).join("、")}からの変更予定は取り消されます。よろしいですか？`)) return;
-                await onSave(changeSchedule(m, weekdays, from), `${formatDateLong(from)}から ${wdText(weekdays)} に変更しました`);
+                await onSave(
+                  changeSchedule(m, weekdays, from, undefined, slot),
+                  `${formatDateLong(from)}から ${wdText(weekdays)}（${slotText(slot)}） に変更しました`,
+                );
               })
             }
           >
-            曜日を変更する
+            曜日・時間帯を変更する
           </button>
         </div>
         <div className="small" style={{ marginTop: 16 }}>
@@ -329,11 +362,11 @@ function EditMember({
           <ul className="history">
             {sorted.map((s) => (
               <li key={s.from}>
-                {formatDateLong(s.from)}から：{wdText(s.weekdays)}
+                {formatDateLong(s.from)}から：{wdText(s.weekdays)}（{slotText(s.slot)}）
               </li>
             ))}
           </ul>
-          <div className="muted">保存済みの出欠記録は、曜日を変更しても書き換わりません。</div>
+          <div className="muted">保存済みの出欠記録は、曜日・時間帯を変更しても書き換わりません。</div>
         </div>
       </div>
 

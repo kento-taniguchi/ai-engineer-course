@@ -1,5 +1,5 @@
 // アプリ全体の設定値はここにまとめます（金額や事業所名を変えるときは、このファイルだけを直します）
-import type { CopayRatio } from "@/lib/types";
+import type { CopayRatio, TimeSlot } from "@/lib/types";
 
 /**
  * 1回あたりの利用料（円）。介護保険の自己負担割合（1割・2割・3割）ごとに決めます。
@@ -26,3 +26,10 @@ export const WEEKDAY_LABELS = ["日", "月", "火", "水", "木", "金", "土"] 
 
 /** 会員登録画面で表示する曜日の順番（月曜始まり） */
 export const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
+
+/** 利用する時間帯（出欠の画面は、この順番で分けて表示します） */
+export const TIME_SLOTS: Record<TimeSlot, { label: string; time: string }> = {
+  am: { label: "午前", time: "10:30〜12:00" },
+  pm: { label: "午後", time: "14:30〜16:00" },
+};
+export const TIME_SLOT_ORDER: readonly TimeSlot[] = ["am", "pm"];

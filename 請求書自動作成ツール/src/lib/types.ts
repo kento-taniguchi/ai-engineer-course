@@ -4,11 +4,16 @@
 export type DateKey = string;
 export type MonthKey = string;
 
-/** 通常利用する曜日の設定。from の日から有効（次の設定が始まるまで） */
+/** 利用する時間帯（am＝午前／pm＝午後）。時刻の表示は src/config.ts の TIME_SLOTS */
+export type TimeSlot = "am" | "pm";
+
+/** 通常利用する曜日と時間帯の設定。from の日から有効（次の設定が始まるまで） */
 export type ScheduleEntry = {
   from: DateKey;
   /** 0=日, 1=月, ... 6=土 */
   weekdays: number[];
+  /** 時間帯。古いデータで入っていないときは午前として扱います */
+  slot: TimeSlot;
 };
 
 /** 介護保険の自己負担割合（1割・2割・3割） */
